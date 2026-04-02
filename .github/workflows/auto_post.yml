@@ -9,12 +9,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' # ใช้รุ่นใหม่ล่าสุดไปเลย
+          python-version: '3.11'
       - name: Install Tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install google-generativeai gspread google-auth google-api-python-client requests edge-tts
       - name: Run Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
