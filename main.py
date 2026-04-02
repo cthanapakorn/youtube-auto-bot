@@ -1,4 +1,4 @@
-import os, re, json, subprocess, requests, sys
+import os, re, json, subprocess, requests, sys, time
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
@@ -7,69 +7,66 @@ from googleapiclient.http import MediaFileUpload
 def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key: raise ValueError("❌ ไม่พบ API Key ใน Secrets")
+        if not api_key: raise ValueError("❌ ไม่พบ API Key")
         
         client = genai.Client(api_key=api_key.strip())
         
-        print("🔍 กำลังเลือก AI รุ่นที่ดีที่สุดจากบัญชีของคุณ...")
-        available_models = [m.name for m in client.models.list()]
-        
-        # เลือกใช้รุ่นใหม่ล่าสุดที่บัญชีคุณมี (2.5 -> 2.0 -> flash)
-        selected_model = None
-        priority_list = [
-            'models/gemini-2.5-flash', 
-            'models/gemini-2.0-flash', 
-            'models/gemini-1.5-flash',
-            'models/gemini-flash-latest'
-        ]
-        
-        for target in priority_list:
-            if target in available_models:
-                selected_model = target
-                break
-        
-        if not selected_model:
-            # ถ้าไม่เจอตัวข้างบนเลย ให้เอาตัวแรกที่มีคำว่า flash
-            for m in available_models:
-                if 'flash' in m.lower() and 'image' not in m.lower():
-                    selected_model = m
-                    break
+        # เลือกโมเดลที่บัญชีคุณมี (Gemini 2.5 Flash)
+        selected_model = 'models/gemini-2.5-flash'
+        print(f"✅ ใช้โมเดล: {selected_model}")
 
-        if not selected_model:
-            raise ValueError("❌ ไม่พบรุ่นที่เหมาะสมในบัญชีของคุณ")
-
-        print(f"✅ ตกลงใช้รุ่น: {selected_model}")
-
-        # --- เริ่มงานเนื้อหา ---
-        print("🧠 1. AI กำลังร่างสคริปต์ไวรัล...")
-        prompt = "สรุปเคล็ดลับการเงิน 3 ฉาก ตอบเป็น JSON เท่านั้น: {\"topic\": \"...\", \"scenes\": [{\"text\": \"...\", \"image_prompt\": \"Cinematic finance, high quality\"}]}"
+        # 1. ร่างสคริปต์
+        print("🧠 1. AI กำลังคิดบทพากย์และภาพประกอบ...")
+        prompt = "Create a 3-scene YouTube Shorts script about Finance in Thai. Response ONLY JSON: {\"topic\": \"...\", \"scenes\": [{\"text\": \"...\", \"image_prompt\": \"Cinematic, professional, finance, 4k\"}]}"
         
         response = client.models.generate_content(model=selected_model, contents=prompt)
-        
-        # ล้างข้อมูลเผื่อ AI ใส่ Markdown มา
-        json_text = re.search(r'\{.*\}', response.text, re.DOTALL).group()
-        data = json.loads(json_text)
-        print(f"✅ หัวข้อคลิป: {data['topic']}")
+        data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
+        print(f"🎬 หัวข้อ: {data['topic']}")
 
-        # --- ขั้นตอนสร้างคลิป ---
-        print("🎙️ 2. สร้างเสียงพากย์...")
+        # 2. เสียงพากย์
+        print("🎙️ 2. กำลังสร้างเสียงพากย์...")
         full_text = " ".join([s['text'] for s in data['scenes']])
         subprocess.run(f'edge-tts --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        print("🎨 3. สร้างภาพ AI ประกอบเนื้อหา...")
+        # 3. ดาวน์โหลดภาพ (เพิ่มระบบเช็คความถูกต้อง)
+        print("🎨 3. กำลังดาวน์โหลดภาพประกอบ...")
         for i, sc in enumerate(data['scenes']):
-            url = f"https://pollinations.ai/p/{sc['image_prompt'].replace(' ', '%20')}?width=1080&height=1920&model=flux"
-            r = requests.get(url)
-            with open(f"i_{i}.jpg", "wb") as f: f.write(r.content)
+            # ใส่ seed แบบสุ่มเพื่อให้ได้ภาพใหม่เสมอ
+            seed = int(time.time()) + i
+            url = f"https://pollinations.ai/p/{sc['image_prompt'].replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={seed}"
+            
+            # พยายามโหลดจนกว่าจะได้รูป (Retry 3 ครั้ง)
+            success = False
+            for attempt in range(3):
+                r = requests.get(url, timeout=30)
+                if r.status_code == 200 and len(r.content) > 10000: # ต้องมีขนาดมากกว่า 10KB ถึงจะเป็นรูปจริง
+                    with open(f"i_{i}.jpg", "wb") as f: f.write(r.content)
+                    print(f"   📸 ฉากที่ {i+1}: โหลดสำเร็จ")
+                    success = True
+                    break
+                print(f"   ⚠️ ฉากที่ {i+1}: กำลังลองใหม่ (รอบที่ {attempt+1})...")
+                time.sleep(2)
+            
+            if not success: raise RuntimeError(f"❌ โหลดรูปฉากที่ {i+1} ไม่สำเร็จ")
 
-        print("🎬 4. กำลังประกอบร่างเป็นวิดีโอ...")
+        # 4. ประกอบวิดีโอ (ปรับปรุงคำสั่งให้เสถียรขึ้น)
+        print("🎬 4. กำลังตัดต่อวิดีโอ...")
+        # สร้างไฟล์รายการภาพ
         with open("l.txt", "w") as f:
-            for i in range(3): f.write(f"file 'i_{i}.jpg'\nduration 5\n")
-            f.write("file 'i_2.jpg'")
-        subprocess.run("ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 -pix_fmt yuv420p -shortest final.mp4", shell=True, check=True)
+            for i in range(3):
+                f.write(f"file 'i_{i}.jpg'\nduration 5\n")
+            f.write(f"file 'i_2.jpg'") # บรรทัดสุดท้ายไม่ต้องมี duration
 
-        # --- อัปโหลด ---
-        print("🚀 5. อัปโหลดไป YouTube Studio...")
+        # ใช้คำสั่ง FFmpeg ที่บังคับ Format ให้ตรงกัน
+        cmd = (
+            "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
+            "-c:v libx264 -pix_fmt yuv420p -r 25 -vf 'scale=1080:1920' "
+            "-c:a aac -shortest final.mp4"
+        )
+        subprocess.run(cmd, shell=True, check=True)
+
+        # 5. อัปโหลด
+        print("🚀 5. อัปโหลดไป YouTube...")
         with open('token.json', 'r') as f:
             creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
         
@@ -77,13 +74,13 @@ def run_workflow():
         request = youtube.videos().insert(
             part="snippet,status",
             body={
-                "snippet": {"title": data['topic'], "description": "#AI #Finance"},
-                "status": {"privacyStatus": "private"} # อัปโหลดเป็น Private ให้คุณเช็คก่อน
+                "snippet": {"title": data['topic'], "description": "Auto-generated by AI"},
+                "status": {"privacyStatus": "private"}
             },
             media_body=MediaFileUpload("final.mp4")
         )
         res = request.execute()
-        print(f"✨ สำเร็จ 100%! ดูคลิปได้ที่: https://youtu.be/{res['id']}")
+        print(f"✨ สำเร็จแล้ว! คลิปของคุณอยู่ที่: https://youtu.be/{res['id']}")
 
     except Exception as e:
         print(f"\n‼️ พังตรงนี้ครับ: {str(e)}")
