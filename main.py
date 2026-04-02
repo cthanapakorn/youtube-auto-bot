@@ -1,16 +1,14 @@
-import os, re, json, subprocess, requests, sys, time
+import os, re, json, subprocess, requests, sys, time, random
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from PIL import Image, ImageDraw # ตัวช่วยสร้างรูปเองถ้าเน็ตล่ม
+from PIL import Image, ImageDraw
 
 def create_fallback_image(path, text):
-    # สร้างรูปพื้นหลังสีน้ำเงิน (1080x1920)
-    img = Image.new('RGB', (1080, 1920), color=(25, 45, 85))
+    img = Image.new('RGB', (1080, 1920), color=(15, 23, 42))
     d = ImageDraw.Draw(img)
-    # เขียนหัวข้อคลิปไว้กลางรูป (กันเหนียว)
-    d.text((100, 960), f"Topic: {text[:30]}", fill=(255, 255, 255))
+    d.text((100, 960), f"AI Finance: {text[:25]}...", fill=(255, 255, 255))
     img.save(path, 'JPEG')
 
 def run_workflow():
@@ -20,63 +18,81 @@ def run_workflow():
         
         client = genai.Client(api_key=api_key.strip())
         selected_model = 'models/gemini-2.5-flash'
-        print(f"✅ ใช้โมเดล: {selected_model}")
 
-        # 1. ร่างเนื้อหา
-        print("🧠 1. AI กำลังร่างเนื้อหา...")
-        prompt = "สรุปเคล็ดลับการเงิน 3 ฉาก ตอบเป็น JSON เท่านั้น: {\"topic\": \"...\", \"scenes\": [{\"text\": \"...\", \"image_prompt\": \"Finance, 4k\"}]}"
-        response = client.models.generate_content(model=selected_model, contents=prompt)
+        # 1. ร่างเนื้อหาแบบไวรัล (เน้น Hook และ Engagement)
+        print("🧠 1. AI กำลังออกแบบคอนเทนต์ไวรัล...")
+        viral_prompt = (
+            "Create a viral YouTube Shorts script about Finance in Thai. "
+            "Focus on 'Dark Truths' or 'Secrets to Wealth'. "
+            "Structure: 1 strong hook, 3 value points, 1 question for comments. "
+            "Response ONLY JSON: {\"title\": \"...\", \"hashtags\": \"...\", \"scenes\": ["
+            "{\"text\": \"...\", \"visual\": \"Cinematic motion, close up, highly detailed, finance concept, 4k\"}]}"
+        )
+        
+        response = client.models.generate_content(model=selected_model, contents=viral_prompt)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        print(f"🎬 หัวข้อ: {data['topic']}")
+        print(f"🎬 หัวข้อไวรัล: {data['title']}")
 
-        # 2. สร้างเสียง
-        print("🎙️ 2. สร้างเสียงพากย์...")
+        # 2. เสียงพากย์ (ปรับความเร็วให้ช้าลง 10% เพื่อความชัดเจน)
+        print("🎙️ 2. สร้างเสียงพากย์ (จังหวะเน้นอารมณ์)...")
         full_text = " ".join([s['text'] for s in data['scenes']])
-        subprocess.run(f'edge-tts --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
+        # เพิ่ม --rate=-10% เพื่อให้พูดช้าลง
+        subprocess.run(f'edge-tts --rate=-10% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        # 3. เตรียมรูป (ถ้าเว็บล่ม บอทวาดเองเลย)
-        print("🎨 3. กำลังเตรียมภาพประกอบ...")
+        # 3. เตรียมภาพประกอบแบบ Cinematic
+        print("🎨 3. กำลังเนรมิตภาพประกอบให้สอดคล้อง...")
         for i, sc in enumerate(data['scenes']):
-            url = f"https://pollinations.ai/p/{sc['image_prompt'].replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={int(time.time())+i}"
+            # ใส่คีย์เวอร์ดเพิ่มความเป็นอนิเมชั่นและแสงเงา
+            enhanced_prompt = f"{sc['visual']}, unreal engine 5 render, cinematic lighting, vertical composition"
+            url = f"https://pollinations.ai/p/{enhanced_prompt.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={random.randint(1, 99999)}"
+            
             success = False
             try:
-                r = requests.get(url, timeout=20)
+                r = requests.get(url, timeout=30)
                 if r.status_code == 200 and len(r.content) > 15000:
                     with open(f"i_{i}.jpg", "wb") as f: f.write(r.content)
-                    print(f"   📸 ฉากที่ {i+1}: โหลดรูป AI สำเร็จ")
+                    print(f"   📸 ฉากที่ {i+1}: ภาพ Cinematic พร้อม!")
                     success = True
             except: pass
             
             if not success:
-                print(f"   ⚠️ ฉากที่ {i+1}: เว็บล่ม, บอทวาดรูปสำรองให้เอง...")
-                create_fallback_image(f"i_{i}.jpg", data['topic'])
+                create_fallback_image(f"i_{i}.jpg", data['title'])
 
-        # 4. ตัดต่อ (FFmpeg)
-        print("🎬 4. กำลังประกอบวิดีโอ...")
+        # 4. ตัดต่อ (เพิ่ม Zoom Effect เบาๆ ผ่าน FFmpeg เพื่อให้ดูเหมือนอนิเมชั่น)
+        print("🎬 4. กำลังประกอบวิดีโอแบบไดนามิก...")
         with open("l.txt", "w") as f:
-            for i in range(3): f.write(f"file 'i_{i}.jpg'\nduration 5\n")
-            f.write(f"file 'i_2.jpg'")
+            for i in range(len(data['scenes'])):
+                f.write(f"file 'i_{i}.jpg'\nduration 10\n") # ปรับเวลาต่อฉากให้นานขึ้นเพื่อให้พอดี 60 วิ
+            f.write(f"file 'i_{len(data['scenes'])-1}.jpg'")
 
+        # คำสั่ง FFmpeg พิเศษ: เพิ่มการซูมเข้า (Zoom pan) เพื่อให้ภาพนิ่งดูมีชีวิต
         cmd = (
             "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
-            "-c:v libx264 -pix_fmt yuv420p -r 25 -vf 'scale=1080:1920' "
-            "-c:a aac -shortest final.mp4"
+            "-vf \"scale=2000:-1,zoompan=z='min(zoom+0.001,1.5)':d=125:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920,setsar=1\" "
+            "-c:v libx264 -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4"
         )
         subprocess.run(cmd, shell=True, check=True)
 
-        # 5. อัปโหลด
-        print("🚀 5. อัปโหลดไป YouTube...")
+        # 5. อัปโหลดพร้อม #Hashtag ที่ AI คิดให้
+        print("🚀 5. อัปโหลดสู่เป้าหมายไวรัล...")
         with open('token.json', 'r') as f:
             creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
         
         youtube = build("youtube", "v3", credentials=creds)
         request = youtube.videos().insert(
             part="snippet,status",
-            body={"snippet": {"title": data['topic']}, "status": {"privacyStatus": "private"}},
+            body={
+                "snippet": {
+                    "title": data['title'],
+                    "description": f"{data['title']}\n\n{data['hashtags']} #AI #Shorts #FinanceThai",
+                    "categoryId": "27" # Education
+                },
+                "status": {"privacyStatus": "public"} # ปรับเป็น Public ทันทีเพื่อความไวรัล!
+            },
             media_body=MediaFileUpload("final.mp4")
         )
         res = request.execute()
-        print(f"✨ สำเร็จ 100%! ดูคลิปที่: https://youtu.be/{res['id']}")
+        print(f"✨ ไวรัลเริ่มแล้ว! ดูความปังได้ที่: https://youtu.be/{res['id']}")
 
     except Exception as e:
         print(f"\n‼️ พังตรงนี้ครับ: {str(e)}")
