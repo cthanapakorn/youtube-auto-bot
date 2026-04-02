@@ -1,6 +1,5 @@
 google-genai
-gspread
-google-auth
-google-api-python-client
 requests
 edge-tts
+google-api-python-client
+google-auth
