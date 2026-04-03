@@ -1,61 +1,72 @@
-import os, re, json, subprocess, requests, sys, time, random
+import os, re, json, subprocess, requests, sys, time
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from PIL import Image, ImageDraw
 
-def validate_and_fallback(path, text, scene_num):
-    """ตรวจสอบว่าไฟล์ภาพใช้ได้ไหม ถ้าเสียให้วาดใหม่ทันที"""
-    try:
-        with Image.open(path) as img:
-            img.verify()
-        print(f"   ✅ ฉากที่ {scene_num}: ภาพสมบูรณ์")
-    except:
-        print(f"   ⚠️ ฉากที่ {scene_num}: ภาพเสีย! กำลังวาดภาพ Cinematic สำรอง...")
-        img = Image.new('RGB', (1080, 1920), color=(5, 5, 15))
-        d = ImageDraw.Draw(img)
-        d.rectangle([40, 40, 1040, 1880], outline=(255, 191, 0), width=15)
-        d.text((100, 960), f"EPIC SCENE {scene_num}\n{text[:30]}...", fill=(255, 191, 0))
-        img.save(path, 'JPEG')
+def generate_external_image(prompt, filename):
+    """ส่งคำสั่งไป Generate ภาพที่ Server ภายนอก (Hugging Face) แล้วดึงกลับมา"""
+    hf_token = os.getenv("HF_TOKEN")
+    if not hf_token: raise ValueError("❌ ไม่พบ HF_TOKEN ใน GitHub Secrets")
+
+    # ใช้โมเดลระดับโลก Stable Diffusion XL
+    api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+    headers = {"Authorization": f"Bearer {hf_token.strip()}"}
+    payload = {"inputs": prompt}
+
+    print(f"   ⏳ ส่งคำสั่งให้ External AI Cloud วาดรูป...")
+    # ระบบอาจต้องใช้เวลาโหลดโมเดล เราจะให้มันพยายามดึงข้อมูล 5 รอบ
+    for attempt in range(5):
+        response = requests.post(api_url, headers=headers, json=payload)
+        if response.status_code == 200:
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            print("   ✅ ดึงไฟล์ภาพกลับมาสำเร็จ!")
+            return True
+        elif response.status_code == 503:
+            print(f"   ⏳ Server ภายนอกกำลังปลุก AI... รอ 15 วินาที (รอบที่ {attempt+1}/5)")
+            time.sleep(15)
+        else:
+            print(f"   ⚠️ Server Error: {response.status_code} - กำลังลองใหม่...")
+            time.sleep(5)
+            
+    raise RuntimeError("❌ ดึงภาพจาก Server ภายนอกไม่สำเร็จ (Time Out)")
 
 def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key: raise ValueError("❌ ไม่พบ GEMINI_API_KEY")
+        
         client = genai.Client(api_key=api_key.strip())
         model_id = 'models/gemini-2.5-flash'
 
-        # 1. ร่างสคริปต์ไทย สไตล์เรื่องเล่ามหากาพย์
-        print("🧠 1. AI กำลังออกแบบบทพากย์ไทยและภาพ Cinematic (DODI Style)...")
+        # 1. ร่างสคริปต์
+        print("🧠 1. AI Director กำลังเขียนบทมหากาพย์ 60 วินาที...")
         prompt = (
-            "Create a 60s viral Thai storytelling script about 'Epic Destiny' or 'Ancient Legend'. "
-            "Use powerful Thai language with '...' for dramatic pauses. "
-            "Visual Prompts: English, 3D Cinematic, Unreal Engine 5, Epic lighting. "
-            "Output STRICT JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"...\", \"visual\": \"...\"}]}"
+            "Create a 60s viral Thai storytelling script about 'Epic Transformation'. "
+            "6 scenes total. Thai voiceover. "
+            "Output STRICT JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"บทพากย์ไทย...\", \"visual\": \"Detailed English visual prompt for Stable Diffusion, cinematic 3d, 8k\"}]}"
         )
         response = client.models.generate_content(model=model_id, contents=prompt)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        
-        # 2. เสียงพากย์ (เน้นความขลัง)
-        print("🎙️ 2. สร้างเสียงพากย์โทนลึกลับ (Rate -15%)...")
+        print(f"🎬 หัวข้อ: {data['title']}")
+
+        # 2. เสียงพากย์
+        print("🎙️ 2. สร้างเสียงพากย์ด้วย AI (Rate -15%)...")
         full_text = " ".join([s['text'] for s in data['scenes']])
         subprocess.run(f'edge-tts --rate=-15% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        # 3. สร้างภาพประกอบ (6 ฉาก ฉากละ 10 วินาที)
-        print("🎨 3. กำลังเนรมิตภาพประกอบระดับ 8K...")
-        scenes = data['scenes'][:6] # บังคับ 6 ฉาก
+        # 3. สั่ง Generate ภาพจากภายนอก
+        print("🎨 3. สั่ง Generate ภาพระดับ 8K จาก External Server...")
+        scenes = data['scenes'][:6]
         for i, sc in enumerate(scenes):
-            enhanced_prompt = f"{sc['visual']}, masterwork, cinematic atmosphere, gold and dark blue, vertical 9:16"
-            url = f"https://pollinations.ai/p/{enhanced_prompt.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={random.randint(1, 999999)}"
-            
-            try:
-                r = requests.get(url, timeout=45)
-                with open(f"i_{i}.jpg", "wb") as f: f.write(r.content)
-            except: pass
-            validate_and_fallback(f"i_{i}.jpg", sc['text'], i+1)
+            print(f"--- กำลังทำฉากที่ {i+1}/6 ---")
+            enhanced_prompt = f"{sc['visual']}, unreal engine 5 render, highly detailed, dramatic lighting, vertical 9:16 format"
+            # ฟังก์ชันตัวนี้จะวิ่งไป Generate ข้างนอกแล้วดึงกลับมา
+            generate_external_image(enhanced_prompt, f"i_{i}.jpg")
 
-        # 4. ตัดต่อ (Dynamic Zoom)
-        print("🎬 4. กำลังตัดต่อวิดีโอ (จำลองวิดีโอ AI)...")
+        # 4. ประกอบวิดีโอ (Motion Zoom)
+        print("🎬 4. นำทุกอย่างมาประกอบเป็น Video ในเครื่อง (FFmpeg)...")
         with open("l.txt", "w") as f:
             for i in range(len(scenes)):
                 f.write(f"file 'i_{i}.jpg'\nduration 10\n")
@@ -69,7 +80,7 @@ def run_workflow():
         subprocess.run(cmd, shell=True, check=True)
 
         # 5. อัปโหลด
-        print("🚀 5. อัปโหลดสู่ YouTube...")
+        print("🚀 5. อัปโหลด VDO ที่เสร็จแล้วสู่ YouTube...")
         with open('token.json', 'r') as f:
             creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
         
@@ -77,17 +88,17 @@ def run_workflow():
         try:
             youtube.videos().insert(
                 part="snippet,status",
-                body={"snippet": {"title": data['title'], "description": "#เรื่องเล่า #AI", "categoryId": "27"}, "status": {"privacyStatus": "public"}},
+                body={"snippet": {"title": data['title'], "description": "#เรื่องเล่า #AI", "categoryId": "27"}, "status": {"privacyStatus": "private"}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ สำเร็จ! คลิปมหากาพย์ของคุณพร้อมรับยอดวิวแล้ว")
+            print("✨ สำเร็จ 100%! VDO ถูกสร้างและส่งขึ้นช่องเรียบร้อยครับ")
         except Exception as e:
             if "uploadLimitExceeded" in str(e):
-                print("\n⚠️ โควตาอัปโหลดวันนี้เต็ม! (รอ 24 ชม. หรือยืนยันตัวตนช่องใน YouTube Studio นะครับ)")
+                print("\n⚠️ อัปโหลดไม่ผ่านเพราะโควตา YouTube วันนี้เต็มครับ (ต้องรอ 24 ชม.) แต่ VDO ทำเสร็จสมบูรณ์แล้วใน GitHub!")
             else: raise e
 
     except Exception as e:
-        print(f"\n‼️ พังตรงนี้: {str(e)}")
+        print(f"\n‼️ Error: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
