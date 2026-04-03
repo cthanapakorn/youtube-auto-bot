@@ -22,7 +22,7 @@ jobs:
           pip install google-genai requests edge-tts google-api-python-client google-auth Pillow
           
       - name: Run Script
-        env: # เพิ่ม HF_TOKEN บรรทัดล่างนี้ครับ
+        env: # เพิ่มบรรทัดด้านล่างนี้ครับ
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python main.py
