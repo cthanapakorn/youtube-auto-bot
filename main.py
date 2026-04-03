@@ -5,103 +5,85 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image, ImageDraw
 
-def create_emergency_slide(path, text, scene_num):
-    """วาดภาพ Cinematic สไตล์มหากาพย์ (Gold-Black) เมื่อ AI สร้างรูปไม่ได้"""
-    img = Image.new('RGB', (1080, 1920), color=(5, 5, 10))
-    d = ImageDraw.Draw(img)
-    d.rectangle([40, 40, 1040, 1880], outline=(212, 175, 55), width=15)
-    # ใส่ข้อความฉาก (ตัดคำสั้นๆ)
-    display_text = f"STEP {scene_num}\n{text[:30]}..."
-    d.text((120, 900), display_text, fill=(212, 175, 55))
-    img.save(path, 'JPEG')
-
-def get_ai_image(prompt, filename, scene_num):
-    """ระบบ Hybrid Image: พยายามดึงภาพจาก AI Cloud เพื่อเลี่ยงการโดนบล็อก IP"""
-    print(f"   ⏳ ฉากที่ {scene_num}: กำลังเนรมิตภาพประกอบ...")
-    clean_prompt = re.sub(r'[^\w\s]', '', prompt).strip()
-    seed = random.randint(1, 999999)
-    
-    # หลอกว่าเป็น Browser จริง (Bypass GitHub Action block)
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-
-    # แผน A: Pollinations (Flux Model)
-    url_a = f"https://pollinations.ai/p/{clean_prompt.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={seed}&nologo=true"
-    
-    # แผน B: Hugging Face (ถ้ามี Token)
+def get_image_pro(prompt, filename, scene_num):
+    """ระบบดึงภาพ 3 ชั้น (Hugging Face > Pollinations > Fallback)"""
     hf_token = os.getenv("HF_TOKEN")
     
-    try:
-        r = requests.get(url_a, headers=headers, timeout=40)
-        if r.status_code == 200 and len(r.content) > 50000:
-            with open(filename, 'wb') as f: f.write(r.content)
-            with Image.open(filename) as img: img.verify()
-            print(f"   ✅ ฉากที่ {scene_num}: ได้ภาพจาก Flux AI")
-            return True
-    except: pass
-
-    # ลองแผน B (Stable Diffusion)
+    # --- ชั้นที่ 1: Hugging Face (ใช้ Token ของคุณ) ---
     if hf_token:
+        print(f"   ⏳ ฉากที่ {scene_num}: กำลังดึงภาพจาก Hugging Face (SDXL)...")
+        api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+        headers = {"Authorization": f"Bearer {hf_token.strip()}"}
         try:
-            api_url = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
-            auth_h = {"Authorization": f"Bearer {hf_token.strip()}"}
-            res = requests.post(api_url, headers=auth_h, json={"inputs": prompt}, timeout=60)
+            res = requests.post(api_url, headers=headers, json={"inputs": prompt}, timeout=60)
             if res.status_code == 200:
                 with open(filename, 'wb') as f: f.write(res.content)
-                print(f"   ✅ ฉากที่ {scene_num}: ได้ภาพจากแผนสำรอง (SD)")
+                print(f"   ✅ ฉากที่ {scene_num}: ได้ภาพจริงจาก SDXL")
                 return True
         except: pass
 
-    # ถ้าล่มหมด ใช้แผน C (วาดเองแบบพรีเมียม)
-    create_emergency_slide(filename, prompt, scene_num)
+    # --- ชั้นที่ 2: Pollinations (Bypass Mode) ---
+    print(f"   ⏳ ฉากที่ {scene_num}: แผน A ล่ม... กำลังลอง Pollinations (Bypass Mode)...")
+    url_p = f"https://pollinations.ai/p/{prompt.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={random.randint(1,99999)}"
+    try:
+        r = requests.get(url_p, headers={'User-Agent': 'Mozilla/5.0'}, timeout=30)
+        if r.status_code == 200 and len(r.content) > 50000:
+            with open(filename, 'wb') as f: f.write(r.content)
+            print(f"   ✅ ฉากที่ {scene_num}: ได้ภาพจริงจาก Flux AI")
+            return True
+    except: pass
+
+    # --- ชั้นที่ 3: Fallback (วาดรูปสวยๆ เองถ้า AI ล่มหมด) ---
+    print(f"   ❌ AI ทุกตัวปฏิเสธ! กำลังวาดสไลด์พรีเมียมให้แทน...")
+    img = Image.new('RGB', (1080, 1920), color=(10, 15, 30))
+    d = ImageDraw.Draw(img)
+    d.rectangle([50, 50, 1030, 1870], outline=(212, 175, 55), width=15)
+    d.text((120, 900), f"LEGEND SCENE {scene_num}\n{prompt[:30]}...", fill=(212, 175, 55))
+    img.save(filename, 'JPEG')
     return False
 
 def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
-        model_id = 'models/gemini-2.5-flash'
 
-        # 1. AI Director: ร่างบทและคำสั่งสร้างภาพระดับโลก
-        print("🧠 1. AI Director กำลังวิเคราะห์สคริปต์ไวรัล (เป้าหมาย 60 วินาที)...")
-        system_prompt = (
-            "Act as a World-Class Storyteller (DODI Style). Create a 60-second Thai vertical video script (9:16) "
-            "Topic: 'Ancient Wisdom'. Tone: Powerful, Emotional. "
-            "Structure: 6 scenes, each 10 seconds. Use '...' for dramatic pauses in voiceover. "
-            "Output STRICT JSON: {\"title\": \"...\", \"hashtags\": \"...\", \"scenes\": ["
-            "{\"text\": \"...\", \"visual\": \"High-end 3D, luxury gold and black, cinematic lighting, 8k\"}]}"
+        # 1. ร่างบท 60 วินาที (สั่งให้เขียนบทพากย์ไทยยาวพิเศษ)
+        print("🧠 1. AI กำลังเขียนบทมหากาพย์ 'ยาว 60 วินาที'...")
+        prompt_ai = (
+            "Act as a Master Storyteller. Create a 60-second Thai viral script. "
+            "IMPORTANT: The script must be LONG (at least 200 words) to cover 60 seconds. "
+            "Structure: 6 scenes, each 10 seconds. Thai voiceover. English visual prompts. "
+            "Output JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"บทพากย์ไทยยาวๆ...\", \"visual\": \"Detailed English prompt\"}]}"
         )
-        response = client.models.generate_content(model=model_id, contents=system_prompt)
+        response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_ai)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        print(f"✅ คอนเทนต์พร้อม: {data['title']}")
 
-        # 2. เสียงพากย์ (ปรับความเร็ว -15%)
-        print("🎙️ 2. กำลังลงเสียงพากย์ด้วยระบบ AI (โทนเสียงขลัง)...")
-        full_voice_text = " ".join([s['text'] for s in data['scenes'][:6]])
-        subprocess.run(f'edge-tts --rate=-15% --voice "th-TH-NiwatNeural" --text "{full_voice_text}" --write-media "v.mp3"', shell=True, check=True)
+        # 2. เสียงพากย์
+        print("🎙️ 2. สร้างเสียงพากย์ภาษาไทย...")
+        full_text = " ".join([s['text'] for s in data['scenes'][:6]])
+        subprocess.run(f'edge-tts --rate=-15% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        # 3. สร้างภาพประกอบ (6 ฉาก)
-        print("🎨 3. กระบวนการสร้างภาพประกอบทีละฉาก...")
+        # 3. สร้างภาพ
         scenes = data['scenes'][:6]
         for i, sc in enumerate(scenes):
-            get_ai_image(sc['visual'], f"i_{i}.jpg", i+1)
+            get_image_pro(sc['visual'], f"i_{i}.jpg", i+1)
 
         # 4. ตัดต่อ (Dynamic Zoom)
-        print("🎬 4. กำลังประกอบวิดีโอ 60 วินาที (Motion Zoom Effect)...")
+        print("🎬 4. กำลังประกอบวิดีโอ (Ken Burns Effect)...")
         with open("l.txt", "w") as f:
             for i in range(len(scenes)):
                 f.write(f"file 'i_{i}.jpg'\nduration 10\n")
-            f.write(f"file 'i_{len(scenes)-1}.jpg'")
+            f.write(f"file 'i_5.jpg'")
 
-        # FFmpeg: ปรับ Scale ให้สูงก่อน Zoom เพื่อภาพไม่แตก
         cmd = (
             "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
-            "-vf \"scale=2500:-1,zoompan=z='min(zoom+0.0015,1.5)':d=250:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920,setsar=1\" "
+            "-vf \"scale=2000:-1,zoompan=z='min(zoom+0.0015,1.5)':d=250:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920\" "
             "-c:v libx264 -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4"
         )
         subprocess.run(cmd, shell=True, check=True)
 
         # 5. อัปโหลด (PRIVATE)
-        print("🚀 5. ส่งวิดีโอขึ้น YouTube (สถานะ: ส่วนตัว)...")
+        print("🚀 5. อัปโหลดสู่ YouTube (ส่วนตัว)...")
         with open('token.json', 'r') as f:
             creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
         
@@ -109,19 +91,16 @@ def run_workflow():
         try:
             youtube.videos().insert(
                 part="snippet,status",
-                body={
-                    "snippet": {"title": data['title'], "description": "#เรื่องเล่า #AI", "categoryId": "27"},
-                    "status": {"privacyStatus": "private"}
-                },
+                body={"snippet": {"title": data['title'], "categoryId": "27"}, "status": {"privacyStatus": "private"}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ สำเร็จ 100%! VDO ถูกสร้างและส่งขึ้นช่องเรียบร้อยครับ")
+            print("✨ สำเร็จ! วิดีโอถูกส่งขึ้นช่องแล้ว (เข้าไปดูที่ 'วิดีโอส่วนตัว' นะครับ)")
         except Exception as e:
-            if "uploadLimitExceeded" in str(e): print("\n⚠️ โควตา YouTube วันนี้เต็ม! (รอ 24 ชม. นะครับ)")
+            if "uploadLimitExceeded" in str(e): print("\n⚠️ โควตาวันนี้เต็ม! (รอ 24 ชม. นะครับ)")
             else: raise e
 
     except Exception as e:
-        print(f"\n‼️ พังตรงนี้: {str(e)}")
+        print(f"\n‼️ Error: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
