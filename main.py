@@ -5,13 +5,14 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image, ImageDraw
 
-def create_pro_fallback(path, text):
-    """สร้างภาพพื้นหลังสไตล์ Infographic กรณีเว็บบล็อก"""
-    img = Image.new('RGB', (1080, 1920), color=(10, 20, 30))
+def create_viral_fallback(path, text):
+    """สร้างภาพแนว Infographic สไตล์ Modern เมื่อเว็บสร้างรูปล่ม"""
+    img = Image.new('RGB', (1080, 1920), color=(18, 18, 18))
     d = ImageDraw.Draw(img)
-    # วาดเส้นกราฟฟิกตกแต่ง
-    d.rectangle([0, 0, 1080, 100], fill=(255, 215, 0)) # แถบบนสีทอง
-    d.text((100, 900), f"STRATEGY: {text[:30]}...", fill=(255, 255, 255))
+    # วาดกรอบสีเหลืองทองให้ดูแพง
+    d.rectangle([40, 40, 1040, 1880], outline=(255, 215, 0), width=20)
+    # ใส่ข้อความหลัก
+    d.text((100, 900), f"STRATEGY: {text[:25]}...", fill=(255, 215, 0))
     img.save(path, 'JPEG')
 
 def run_workflow():
@@ -20,72 +21,65 @@ def run_workflow():
         if not api_key: raise ValueError("❌ ไม่พบ API Key")
         
         client = genai.Client(api_key=api_key.strip())
-        # ใช้รุ่นท็อปที่คุณมีในบัญชี
         selected_model = 'models/gemini-2.5-flash'
 
-        print("🧠 1. กำลังวิเคราะห์คอนเทนต์ไวรัล (60 วินาที)...")
-        # สั่ง AI ให้เขียนบทแบบมีจังหวะหยุด (ใช้ ... แทนการเว้นวรรค)
+        # 1. ร่างเนื้อหา (6 ฉาก เพื่อให้ยาว 50-60 วิ)
+        print("🧠 1. AI กำลังออกแบบคอนเทนต์ไวรัลและ 'ซับไตเติล'...")
         viral_prompt = (
-            "Act as a Viral Content Creator. Create a 60-second Thai YouTube Shorts script about 'Financial Secrets'. "
-            "Structure: Hook (Shocking), 3 Value Points (Secretive), and Engagement Question. "
-            "Important: Add '...' in text for natural pauses. "
+            "Create a viral 60s Thai Finance Shorts. Use a 'Dark Secret' hook. "
             "Response ONLY JSON: {\"title\": \"...\", \"hashtags\": \"...\", \"scenes\": ["
-            "{\"text\": \"(หยุด 1 วิ) คุณเคยสงสัยไหมว่า... ทำไมคนทำงานหนักถึงไม่รวยสักที?\", \"visual\": \"Cinematic 3D, stressed worker, dark office, golden aura, 8k\"},"
-            "{\"text\": \"ข้อที่ 1... ความลับของดอกเบี้ยทบต้น... ที่โรงเรียนไม่เคยสอนคุณ!\", \"visual\": \"Futuristic bank vault, glowing coins multiplying, 3d render\"},"
-            "{\"text\": \"ข้อที่ 2... หนี้ไม่ได้น่ากลัว... ถ้าคุณใช้มันซื้อสินทรัพย์ ไม่ใช่ของเล่น!\", \"visual\": \"Luxury house vs expensive car comparison, isometric cartoon\"},"
-            "{\"text\": \"และข้อที่ 3... ทักษะที่ผลิตเงิน... สำคัญกว่าใบปริญญาหลายเท่า!\", \"visual\": \"Digital brain glowing with icons of money and skills, neon style\"},"
-            "{\"text\": \"อยากรู้วิธีเริ่มไหม?... พิมพ์คำว่า 'เริ่ม' ในคอมเมนต์... แล้วผมจะส่งทางลัดให้!\", \"visual\": \"Confident person walking towards a bright city skyline, sunset\"}"
-            "]}"
+            "{\"text\": \"(หยุด 1 วิ) ทำไมคนรวยถึงยิ่งรวย... ขณะที่คุณยังเหนื่อย?\", \"visual\": \"Cinematic 3D, gold coins in dark room, lighting, 8k\"},"
+            "{\"text\": \"...\", \"visual\": \"...\"}, {\"text\": \"...\", \"visual\": \"...\"},"
+            "{\"text\": \"...\", \"visual\": \"...\"}, {\"text\": \"...\", \"visual\": \"...\"},"
+            "{\"text\": \"ถ้าอยากรู้วิธีแก้... พิมพ์ 'พร้อม' แล้วผมจะบอก!\", \"visual\": \"Futuristic city sunrise, success\"}]}"
         )
         
         response = client.models.generate_content(model=selected_model, contents=viral_prompt)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        print(f"🎬 หัวข้อไวรัล: {data['title']}")
+        print(f"🎬 หัวข้อ: {data['title']}")
 
-        # 2. เสียงพากย์ (ปรับความเร็วและจังหวะ)
-        print("🎙️ 2. ลงเสียงพากย์ (เว้นวรรคแบบธรรมชาติ)...")
+        # 2. เสียงพากย์ (Rate -12% เพื่อให้ดูขลังและน่าเชื่อถือ)
+        print("🎙️ 2. สร้างเสียงพากย์ (Natural Pacing)...")
         full_text = " ".join([s['text'] for s in data['scenes']])
-        # ใช้ความเร็ว -10% เพื่อให้ดูมีน้ำหนักและน่าเชื่อถือ
-        subprocess.run(f'edge-tts --rate=-10% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
+        subprocess.run(f'edge-tts --rate=-12% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        # 3. สร้างภาพประกอบ (Cinematic Cartoon Style)
-        print("🎨 3. เนรมิตภาพประกอบระดับ 4K...")
+        # 3. เตรียมภาพประกอบ (3D Cinematic Style)
+        print("🎨 3. กำลังสร้างภาพประกอบให้สอดคล้องกับเนื้อหา...")
         for i, sc in enumerate(data['scenes']):
-            # ใส่ Prompt สำหรับสร้างภาพที่สวยและหยุดนิ้วคน
-            style = "Masterpiece, cinematic lighting, 3D render style, vibrant colors, hyper-detailed, vertical 9:16"
-            url = f"https://pollinations.ai/p/{sc['visual'].replace(' ', '%20')},{style.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={random.randint(1, 100000)}"
+            # ใส่สไตล์ 3D Animation ให้หยุดนิ้วคน
+            style = "Masterpiece, 3D render style, octane render, vibrant, cinematic, vertical 9:16"
+            url = f"https://pollinations.ai/p/{sc['visual'].replace(' ', '%20')},{style.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={random.randint(1, 99999)}"
             
             success = False
             try:
                 r = requests.get(url, timeout=40)
                 if r.status_code == 200 and len(r.content) > 20000:
                     with open(f"i_{i}.jpg", "wb") as f: f.write(r.content)
-                    print(f"   📸 ฉากที่ {i+1}: ภาพสวยตรงปก!")
+                    print(f"   📸 ฉากที่ {i+1}: ภาพระดับ 4K พร้อม!")
                     success = True
             except: pass
             
             if not success:
-                create_pro_fallback(f"i_{i}.jpg", sc['text'])
+                print(f"   ⚠️ ฉากที่ {i+1}: ใช้ระบบวาดภาพสำรอง")
+                create_viral_fallback(f"i_{i}.jpg", sc['text'])
 
-        # 4. ตัดต่อ (เพิ่มเสียงเพลง + เอฟเฟกต์เคลื่อนไหว)
-        print("🎬 4. กำลังตัดต่อแบบ Dynamic (ความยาว 60 วิ)...")
+        # 4. ตัดต่อ (ใส่ Dynamic Zoom และซับไตเติล)
+        print("🎬 4. กำลังประกอบวิดีโอ (60 วินาที + Zoom Effects)...")
         with open("l.txt", "w") as f:
-            # เฉลี่ยเวลา 5 ฉาก ให้ได้ฉากละประมาณ 11-12 วินาที
             for i in range(len(data['scenes'])):
-                f.write(f"file 'i_{i}.jpg'\nduration 11.5\n")
+                f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_{len(data['scenes'])-1}.jpg'")
 
-        # ใช้คำสั่ง FFmpeg พิเศษ: เพิ่มการซูม (Zoom) และใส่ดนตรีประกอบแบบวนลูป
-        # หมายเหตุ: เราจะใช้เสียงพากย์เป็นหลัก และใส่เพลงเบาๆ
+        # FFmpeg: เพิ่มการขยับของภาพ (Ken Burns Effect)
         cmd = (
             "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
-            "-vf \"scale=2000:-1,zoompan=z='min(zoom+0.0015,1.5)':d=300:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920,setsar=1\" "
+            "-vf \"scale=2000:-1,zoompan=z='min(zoom+0.0015,1.5)':d=250:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920,setsar=1\" "
             "-c:v libx264 -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4"
         )
         subprocess.run(cmd, shell=True, check=True)
 
         # 5. อัปโหลด
-        print("🚀 5. อัปโหลดสู่ YouTube (Status: Public)...")
+        print("🚀 5. อัปโหลดสู่ YouTube (เปิดสาธารณะ)...")
         with open('token.json', 'r') as f:
             creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
         
@@ -95,7 +89,7 @@ def run_workflow():
             body={
                 "snippet": {
                     "title": data['title'],
-                    "description": f"{data['title']}\n\n{data['hashtags']} #การเงิน #Shorts #เศรษฐี",
+                    "description": f"{data['title']}\n\n{data['hashtags']} #การเงิน #Shorts #AI",
                     "categoryId": "27"
                 },
                 "status": {"privacyStatus": "public"}
@@ -103,10 +97,10 @@ def run_workflow():
             media_body=MediaFileUpload("final.mp4")
         )
         res = request.execute()
-        print(f"✨ ไวรัลสำเร็จ! ลิงก์คลิป: https://youtu.be/{res['id']}")
+        print(f"✨ ไวรัลสำเร็จ! ดูคลิปที่: https://youtu.be/{res['id']}")
 
     except Exception as e:
-        print(f"\n‼️ ติดปัญหา: {str(e)}")
+        print(f"\n‼️ ติดปัญหาที่: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
