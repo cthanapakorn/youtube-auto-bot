@@ -3,105 +3,99 @@ from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-# --- ⚙️ การตั้งค่า ---
-MODEL_ID = 'models/gemini-2.5-flash'
-SCENE_COUNT = 6
-SCENE_DURATION = 10 
-VIDEO_PRIVACY = "private"
-
-def get_stealth_image(prompt, filename, scene_num):
-    """ฟังก์ชันดึงภาพ AI แบบ Stealth Mode เพื่อป้องกันการโดน GitHub บล็อก IP"""
-    print(f"   ⏳ ฉากที่ {scene_num}: กำลังเนรมิตภาพตามบทพูด...")
+def create_cinematic_slide(path, scene_text, scene_num, mascot_name="ปู่วอลลี่"):
+    """สร้างสไลด์กราฟิกคุณภาพสูงด้วยโค้ด (แผนไม้ตายถ้า AI/Stock ล่ม)"""
+    # 1. สร้างพื้นหลังไล่สี (Gradient)
+    base = Image.new('RGB', (1080, 1920), color=(10, 15, 30))
+    d = ImageDraw.Draw(base)
     
-    # ล้างข้อความให้สะอาด
-    clean_p = re.sub(r'[^\w\s]', '', prompt).strip().replace(' ', '%20')
-    seed = random.randint(1, 9999999)
+    # วาดวงกลมเรืองแสงเป็น Mascot จำลอง (ปู่วอลลี่ตัวกลมๆ)
+    d.ellipse([340, 700, 740, 1100], fill=(50, 100, 255)) # ตัว
+    d.ellipse([450, 800, 500, 850], fill=(255, 255, 255)) # ตาซ้าย
+    d.ellipse([580, 800, 630, 850], fill=(255, 255, 255)) # ตาขวา
     
-    # หลอก Server ว่าเราเป็นคนเล่นเว็บจริงๆ (สำคัญมาก!)
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Referer': 'https://pollinations.ai/'
-    }
+    # วาดกรอบทอง Cinematic
+    d.rectangle([40, 40, 1040, 1880], outline=(212, 175, 55), width=12)
+    
+    # ใส่ข้อความหัวข้อ
+    d.text((100, 100), f"SCENE {scene_num}", fill=(212, 175, 55))
+    # หมายเหตุ: ใน GitHub อาจไม่มีฟอนต์ไทย เราจะเน้นภาพประกอบที่รันผ่าน
+    d.text((100, 1200), f">> M A S C O T   S T O R Y <<", fill=(255, 255, 255))
+    
+    base.save(path, 'JPEG', quality=95)
+    print(f"   🎨 สร้างสไลด์กราฟิกอัตโนมัติสำหรับฉากที่ {scene_num}")
 
-    # รายชื่อโมเดล AI (ถ้าตัวหนึ่งพัง จะสลับไปอีกตัวทันที)
-    sources = [
-        f"https://pollinations.ai/p/{clean_p}?width=1080&height=1920&model=flux&seed={seed}&nologo=true",
-        f"https://image.pollinations.ai/prompt/{clean_p}?width=1080&height=1920&seed={seed}"
-    ]
-
-    # สุ่มเวลารอ 7-12 วินาที เพื่อไม่ให้เหมือนบอท
-    time.sleep(random.uniform(7, 12))
-
-    for url in sources:
-        try:
-            r = requests.get(url, headers=headers, timeout=50)
-            if r.status_code == 200 and len(r.content) > 50000:
-                with open(filename, 'wb') as f: f.write(r.content)
-                with Image.open(filename) as img: img.verify()
-                print(f"   ✅ ฉากที่ {scene_num}: ได้ภาพจริงสำเร็จ!")
-                return True
-        except: continue
-
-    # แผนสุดท้าย: ถ้า AI ล่มจริงๆ ให้ไปดึงภาพ Stock คุณภาพสูงมาแทน (ไม่เอาจอดำแล้ว)
-    print(f"   🔄 AI ล่ม... กำลังดึงภาพ Stock ที่ตรงกับบทมาแทน...")
-    url_stock = f"https://source.unsplash.com/1080x1920/?ancient,epic,wisdom,{scene_num}"
+def fetch_image_pro(keyword, filename, scene_num):
+    """ระบบดึงภาพ 3 ชั้น (Unsplash -> Pollinations -> Graphic Engine)"""
+    print(f"   ⏳ ฉากที่ {scene_num}: กำลังควานหาภาพประกอบ...")
+    
+    # ชั้นที่ 1: ดึงจาก Unsplash (ภาพถ่ายจริง มักจะรอดจากการบล็อก)
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    clean_key = re.sub(r'[^\w\s]', '', keyword).strip().replace(' ', ',')
+    url_unsplash = f"https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=1080&q=80" # Default 
+    # ลองสุ่มภาพตาม keyword
+    url_random = f"https://source.unsplash.com/featured/1080x1920?{clean_key}"
+    
     try:
-        r = requests.get(url_stock, timeout=30)
-        if r.status_code == 200:
+        r = requests.get(url_random, headers=headers, timeout=20)
+        if r.status_code == 200 and len(r.content) > 50000:
             with open(filename, 'wb') as f: f.write(r.content)
-            print(f"   ✅ ฉากที่ {scene_num}: ได้ภาพจาก Stock Library")
+            print(f"   ✅ ได้ภาพ Stock จาก Unsplash")
             return True
     except: pass
 
-    # ถ้าพังหมดจริงๆ ค่อยวาดสไลด์
-    img = Image.new('RGB', (1080, 1920), color=(10, 10, 20))
-    img.save(filename, 'JPEG')
-    return False
+    # ชั้นที่ 2: ลอง AI Generator (Pollinations)
+    url_ai = f"https://pollinations.ai/p/{clean_key.replace(',', '%20')}?width=1080&height=1920&model=flux&nologo=true"
+    try:
+        r = requests.get(url_ai, headers=headers, timeout=20)
+        if r.status_code == 200 and len(r.content) > 50000:
+            with open(filename, 'wb') as f: f.write(r.content)
+            print(f"   ✅ ได้ภาพจาก AI Generator")
+            return True
+    except: pass
+
+    # ชั้นที่ 3: แผนไม้ตาย (วาดรูปด้วยโค้ด) - การันตีไฟล์ไม่เสีย
+    create_cinematic_slide(filename, keyword, scene_num)
+    return True
 
 def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
         
-        # 1. ให้ Gemini เขียนบท และวิเคราะห์คำสั่งสร้างภาพจากบทนั้น
-        print("🧠 1. Gemini กำลังเขียนบทและออกแบบคำสั่งสร้างภาพ (Prompt Engineer Mode)...")
-        # เราสั่งให้ Gemini คิดตัวละคร Mascot แบบคลิปที่คุณชอบด้วย
-        mascot_style = "A cute 3d round robot mascot, friendly face, blue glow, octane render style"
-        
+        print("🧠 1. Gemini กำลังวางแผนบทและ Keyword ภาพ...")
         prompt_sys = (
-            f"Act as a Professional Content Creator. 1. Write a 60s Thai storytelling script (6 scenes). "
-            f"2. For each scene, create a very detailed English image prompt featuring: {mascot_style}. "
-            "The prompt must describe what the mascot is doing in that specific scene. "
-            "Output JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"บทไทย...\", \"visual_prompt\": \"Detailed English prompt\"}]}"
+            "Act as a professional YouTuber. Create a 60s Thai storytelling script (6 scenes). "
+            "For each scene, give me: 1. Thai script 2. A simple English keyword for image searching. "
+            "Output JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"...\", \"keyword\": \"...\"}]}"
         )
-        
-        response = client.models.generate_content(model=MODEL_ID, contents=prompt_sys)
+        response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_sys)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        print(f"🎬 หัวข้อคลิป: {data['title']}")
 
-        # 2. เสียงพากย์
-        print("🎙️ 2. สร้างเสียงพากย์ภาษาไทย (Rate -15% เพื่อความขลัง)...")
-        full_voice_text = " ".join([s['text'] for s in data['scenes'][:SCENE_COUNT]])
-        subprocess.run(f'edge-tts --rate=-15% --voice "th-TH-NiwatNeural" --text "{full_voice_text}" --write-media "v.mp3"', shell=True, check=True)
+        print("🎙️ 2. สร้างเสียงพากย์ภาษาไทย...")
+        full_text = " ".join([s['text'] for s in data['scenes'][:6]])
+        subprocess.run(f'edge-tts --rate=-15% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        # 3. สร้างภาพจากบท (โดยใช้ Prompt ที่ Gemini เขียนให้)
-        print("🎨 3. กระบวนการเนรมิตภาพประกอบทีละฉาก...")
-        for i, sc in enumerate(data['scenes'][:SCENE_COUNT]):
-            # ส่งคำสั่งภาษาอังกฤษที่ Gemini เขียนให้ ไปสร้างรูป
-            get_stealth_image(f"{sc['visual_prompt']}, majestic lighting, 8k, cinematic", f"i_{i}.jpg", i+1)
+        print("🖼️ 3. เข้าสู่กระบวนการเตรียมภาพประกอบ (High Reliability Mode)...")
+        for i, sc in enumerate(data['scenes'][:6]):
+            fetch_image_pro(sc['keyword'], f"i_{i}.jpg", i+1)
 
-        # 4. ประกอบวิดีโอ (60 วินาที)
-        print("🎬 4. ประกอบวิดีโอด้วยเทคนิค Motion Zoom...")
+        print("🎬 4. ตัดต่อ Video (60 วินาที)...")
         with open("l.txt", "w") as f:
-            for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration {SCENE_DURATION}\n")
-            f.write(f"file 'i_{SCENE_COUNT-1}.jpg'")
+            for i in range(6): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
+            f.write(f"file 'i_5.jpg'")
         
-        subprocess.run("ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 -vf \"scale=2500:-1,zoompan=z='min(zoom+0.0015,1.5)':d=250:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920\" -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4", shell=True, check=True)
+        # ใช้คำสั่ง FFmpeg ที่ปลอดภัยที่สุดเพื่อกัน Error 69
+        cmd = (
+            "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
+            "-vf \"scale=1080:1920,setsar=1,zoompan=z='min(zoom+0.001,1.2)':d=250:s=1080x1920\" "
+            "-c:v libx264 -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4"
+        )
+        subprocess.run(cmd, shell=True, check=True)
 
-        # 5. อัปโหลด
-        print(f"🚀 5. อัปโหลดสู่ YouTube (สถานะ: {VIDEO_PRIVACY})...")
+        print("🚀 5. อัปโหลดสู่ YouTube (PRIVATE)...")
         if not os.path.exists('token.json'): return
         with open('token.json', 'r') as f:
             creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
@@ -110,16 +104,16 @@ def run_workflow():
         try:
             youtube.videos().insert(
                 part="snippet,status",
-                body={"snippet": {"title": data['title'], "categoryId": "27"}, "status": {"privacyStatus": VIDEO_PRIVACY}},
+                body={"snippet": {"title": data['title'], "categoryId": "27"}, "status": {"privacyStatus": "private"}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ! เข้าไปตรวจงานใน YouTube Studio ได้เลย")
+            print("✨ ภารกิจสำเร็จ! ตรวจสอบวิดีโอได้ใน YouTube Studio")
         except Exception as e:
-            if "uploadLimitExceeded" in str(e): print("⚠️ YouTube Quota เต็ม! รอ 24 ชม.")
+            if "uploadLimitExceeded" in str(e): print("⚠️ Quota เต็ม! รอพรุ่งนี้")
             else: raise e
 
     except Exception as e:
-        print(f"‼️ พังตรงนี้: {str(e)}")
+        print(f"‼️ พังที่: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
