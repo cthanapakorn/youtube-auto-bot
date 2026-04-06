@@ -4,32 +4,39 @@ from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from concurrent.futures import ThreadPoolExecutor
-from PIL import Image
+from PIL import Image, ImageFont
 
-# --- ⚙️ ตั้งค่า (20 ท่อน x 3 วินาที = 60 วินาทีเป๊ะ) ---
+# --- ⚙️ ตั้งค่าระดับสูงสุด (20 ฉาก x 3 วินาที = 60 วินาทีเป๊ะ) ---
 SCENE_COUNT = 20   
 SCENE_DURATION = 3 
 VIDEO_PRIVACY = "private"
 CHAR_ANCHOR = "A charismatic 25-year-old Thai male office worker, messy black hair, white shirt, blue tie, high-quality anime style"
 
-def download_image_final(args):
-    """วาดภาพเล่าเรื่องคุณภาพสูง (Flux) เน้นความต่อเนื่อง"""
+def get_font_name(path):
+    """ดึงชื่อจริงของฟอนต์มาใช้ในซับเพื่อให้ภาษาไทยอ่านออก"""
+    try:
+        font = ImageFont.truetype(path)
+        family, style = font.getname()
+        return family
+    except: return "Sans"
+
+def download_image_parallel(args):
+    """วาดภาพเล่าเรื่องคุณภาพสูงแบบรันขนาน (Fast & Sharp)"""
     prompt, filename, scene_num = args
-    print(f"   🎨 ฉากที่ {scene_num}: กำลังเนรมิตภาพประกอบ...")
+    print(f"   🎨 ฉากที่ {scene_num}: กำลังเนรมิตภาพ...")
+    
     clean_p = re.sub(r'[^\w\s]', '', prompt).strip().replace(' ', '%20')
-    # เพิ่มรายละเอียดให้ภาพดูน่าดึงดูดและสอดคล้องกับเนื้อหา
-    style = "cinematic lighting, 8k resolution, detailed expressive face, emotional atmosphere, masterpiece"
+    style = "cinematic lighting, 8k resolution, expressive face, emotional atmosphere, masterpiece"
     url = f"https://image.pollinations.ai/prompt/{clean_p},{CHAR_ANCHOR},{style}?width=1024&height=1792&seed=8888&nologo=true&model=flux"
     
-    headers = {'User-Agent': 'Mozilla/5.0'}
     for attempt in range(5):
         try:
-            r = requests.get(url, headers=headers, timeout=120)
+            r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=60)
             if r.status_code == 200:
                 with open(filename, 'wb') as f: f.write(r.content)
                 return True
-            time.sleep(15)
-        except: time.sleep(15)
+            time.sleep(10)
+        except: time.sleep(10)
     return False
 
 def run_workflow():
@@ -37,42 +44,37 @@ def run_workflow():
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
         
-        print("🧠 1. Gemini กำลังเขียนบทมหากาพย์ 60 วินาทีแบบสรุปจบในตัว...")
-        # สั่งให้ AI เขียนบทพากย์ที่ยาวพอดีกับ 3 วินาทีต่อท่อน
+        print("🧠 1. Gemini กำลังคิดบทมหากาพย์ 60 วินาทีและข้อมูล SEO...")
         prompt_sys = (
-            "จงสวมบทบาทเป็นนักเล่าเรื่องการเงินระดับโลก สร้างวิดีโอ Shorts หัวข้อ: 'ทำไมคุณขยันแต่ไม่รวย? ความลับดอกเบี้ยทบต้น' "
-            "ภารกิจ: สร้างสคริปต์ 20 ท่อน ท่อนละ 3 วินาที (ต้องยาวประมาณ 25-30 คำต่อท่อนเพื่อให้พอดีเวลา) "
+            "จงสวมบทบาทเป็น Storyteller การเงินระดับไวรัล หัวข้อ: 'ทำไมคนขยันถึงไม่รวย? ความลับที่คน 1% ปกปิดไว้' "
+            "ภารกิจ: สร้างสคริปต์ 20 ท่อน (ท่อนละ 3 วินาที) ที่เล่าเรื่องได้น่าติดตามและจบใน 60 วินาที "
             "กฎเหล็ก:\n"
-            "1. บทพากย์ (text): ภาษาไทยแนวเล่าเรื่อง มีจุดดึงดูดและสรุปจบใน 60 วินาที ห้ามขาดตอน\n"
-            "2. คำสั่งวาดรูป (prompt): ภาษาอังกฤษที่อธิบาย 'เหตุการณ์และอารมณ์' (สลับภาพเงิน, นาฬิกาทราย, กราฟ, และตัวละคร)\n"
-            "3. ซับไตเติล (caption): คำไทย 1-2 คำสั้นๆ ให้เด้งขึ้นมาทีละตัวตามเสียงพากย์\n"
-            "4. SEO: เขียน Description ที่น่าดึงดูด และ Hashtags 5 อัน\n"
+            "1. บทพากย์ (text): ภาษาไทยธรรมชาติที่มีน้ำหนัก มีจังหวะหยุดพัก '...' และเน้นเสียง '!' (ประมาณ 20-25 คำต่อท่อนเพื่อให้ยาวพอดี 3 วินาที)\n"
+            "2. คำสั่งวาดรูป (prompt): ภาษาอังกฤษที่อธิบาย 'เหตุการณ์และอารมณ์' สลับภาพตัวละครและสัญลักษณ์การเงิน\n"
+            "3. ซับไตเติล (caption): คำไทย 1-2 คำสั้นๆ ให้เด้งขึ้นมาทีละตัวตามจังหวะพูด\n"
+            "4. ข้อมูลเสริม: เขียน Description ที่น่าดึงดูด และ Hashtags 5-7 อัน\n"
             "ส่งผลลัพธ์เป็น JSON: {\"title\": \"...\", \"desc\": \"...\", \"tags\": \"...\", \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\", \"caption\": \"...\"}]}"
         )
         response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_sys)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
 
-        print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ (ชาย) แบบเน้นอารมณ์...")
-        # รวมบทพูดและใส่จุดเว้นวรรคเพื่อให้พากย์ได้สมจริง
+        print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ (ชาย) แบบเน้นอารมณ์เล่าเรื่อง...")
         full_voice = " . . . ".join([s['text'] for s in data['scenes']])
         subprocess.run(f'edge-tts --rate=-3% --voice "th-TH-NiwatNeural" --text "{full_voice}" --write-media "v.mp3"', shell=True, check=True)
 
-        print(f"🖼️ 3. วาดภาพ 20 ฉากแบบมหาอุด (คุณภาพสูงสุด)...")
+        print(f"🖼️ 3. วาดภาพ 20 ฉากแบบขนาน (Parallel Mode 🚀)...")
         tasks = [(s['prompt'], f"i_{i}.jpg", i+1) for i, s in enumerate(data['scenes'])]
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            list(executor.map(download_image_final, tasks))
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            list(executor.map(download_image_parallel, tasks))
 
-        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้เรื่องฟอนต์และเพลงประกอบ)...")
+        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้เรื่องฟอนต์ + ผสมเสียงเพลง)...")
+        actual_font = get_font_name("font.ttf")
         
-        # ⚠️ จุดสำคัญ: ถ้ามีไฟล์ font.ttf เราจะใช้ชื่อฟอนต์มาตรฐานที่ FFmpeg เข้าใจ
-        font_path = "font.ttf"
-        
-        # สร้างไฟล์ซับไตเติล .ass (ตัวใหญ่ สีเหลืองนีออน ขอบดำหนา)
         with open("subs.ass", "w", encoding="utf-8-sig") as f:
             f.write("[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\n\n")
             f.write("[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n")
-            # ใส่ Fontname เป็น 'Sans' หรือชื่อฟอนต์ทั่วไป แล้วเราจะบังคับผ่าน FFmpeg อีกที
-            f.write(f"Style: PopUp,Sans,150,&H0000E6FF,&H00FFFFFF,&H00000000,&H60000000,-1,0,0,0,100,100,0,0,1,18,12,2,80,80,450,1\n\n")
+            # ตั้งค่าซับเหลืองนีออน ขอบดำหนา วางกึ่งกลางจอ
+            f.write(f"Style: PopUp,{actual_font},150,&H0000E6FF,&H00FFFFFF,&H00000000,&H60000000,-1,0,0,0,100,100,0,0,1,18,12,2,80,80,450,1\n\n")
             f.write("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
             for i in range(20):
                 start, end = i * 3, (i + 1) * 3
@@ -82,12 +84,11 @@ def run_workflow():
             for i in range(20): f.write(f"file 'i_{i}.jpg'\nduration 3\n")
             f.write(f"file 'i_19.jpg'")
 
-        # 📌 FFmpeg: ผสมเสียง + ซูม Cinematic + ฝังฟอนต์ไทยจากไฟล์โดยตรง
+        # 📌 FFmpeg: ผสมเสียงพากย์ + เพลงประกอบ + ซูม Cinematic + ล็อกเวลา 60 วิ
         has_bg = os.path.exists("bg.mp3")
         music_input = "-i bg.mp3" if has_bg else ""
         audio_filter = "-filter_complex \"[1:a]volume=1.0[a1];[2:a]volume=0.1[a2];[a1][a2]amix=inputs=2:duration=first[a]\" -map 0:v -map \"[a]\"" if has_bg else "-c:a aac"
         
-        # ใช้ subtitles filter พร้อมระบุ fontsdir เพื่อดึง font.ttf มาใช้งาน
         cmd = (
             f"ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 {music_input} "
             f"-vf \"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles=subs.ass:fontsdir=.,zoompan=z='min(zoom+0.0015,1.5)':d=75:s=1080x1920\" "
@@ -95,7 +96,7 @@ def run_workflow():
         )
         subprocess.run(cmd, shell=True, check=True)
 
-        print(f"🚀 5. อัปโหลดสู่ YouTube พร้อมข้อมูล SEO...")
+        print(f"🚀 5. อัปโหลดสู่ YouTube พร้อม SEO จัดเต็ม...")
         if os.path.exists('token.json'):
             with open('token.json', 'r') as f:
                 creds = YoutubeCredentials.from_authorized_user_info(json.load(f))
@@ -112,10 +113,10 @@ def run_workflow():
                 },
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจมหากาพย์สำเร็จ! วิดีโอ 60 วินาทีคุณภาพสูงพร้อมใช้งาน!")
+            print("✨ ภารกิจมหากาพย์สำเร็จ! ทุกอย่างครบจบในคลิปเดียวครับ")
 
     except Exception as e:
-        print(f"‼️ พังตรงนี้: {str(e)}")
+        print(f"‼️ ขัดข้องที่: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
