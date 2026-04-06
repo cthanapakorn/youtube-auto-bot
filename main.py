@@ -10,33 +10,36 @@ from PIL import Image, ImageFont
 SCENE_COUNT = 20   
 SCENE_DURATION = 3 
 VIDEO_PRIVACY = "private"
+# ล็อกหน้าตัวละครให้คงที่
 CHAR_ANCHOR = "A charismatic 25-year-old Thai male office worker, messy black hair, white shirt, blue tie, high-quality anime style"
 
-def get_font_name(path):
-    """ดึงชื่อจริงของฟอนต์มาใช้ในซับเพื่อให้ภาษาไทยอ่านออก"""
+def get_font_family(path):
+    """ดึงชื่อจริงของฟอนต์มาใช้ในไฟล์ .ass เพื่อให้ภาษาไทยแสดงผลถูกต้อง"""
     try:
         font = ImageFont.truetype(path)
         family, style = font.getname()
+        print(f"✅ ตรวจพบฟอนต์ไทย: {family}")
         return family
     except: return "Sans"
 
-def download_image_parallel(args):
-    """วาดภาพเล่าเรื่องคุณภาพสูงแบบรันขนาน (Fast & Sharp)"""
+def download_image_ultra(args):
+    """วาดภาพเล่าเรื่องคุณภาพสูง (Flux Engine) แบบรันขนาน"""
     prompt, filename, scene_num = args
-    print(f"   🎨 ฉากที่ {scene_num}: กำลังเนรมิตภาพ...")
+    print(f"   🎨 ฉากที่ {scene_num}: กำลังเนรมิตภาพประกอบมหากาพย์...")
     
     clean_p = re.sub(r'[^\w\s]', '', prompt).strip().replace(' ', '%20')
-    style = "cinematic lighting, 8k resolution, expressive face, emotional atmosphere, masterpiece"
+    # ใส่รายละเอียดให้ภาพสื่ออารมณ์ชัดเจน (Cinematic)
+    style = "cinematic lighting, 8k resolution, detailed expressive face, emotional atmosphere, masterpiece"
     url = f"https://image.pollinations.ai/prompt/{clean_p},{CHAR_ANCHOR},{style}?width=1024&height=1792&seed=8888&nologo=true&model=flux"
     
     for attempt in range(5):
         try:
-            r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=60)
+            r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=120)
             if r.status_code == 200:
                 with open(filename, 'wb') as f: f.write(r.content)
                 return True
-            time.sleep(10)
-        except: time.sleep(10)
+            time.sleep(15)
+        except: time.sleep(15)
     return False
 
 def run_workflow():
@@ -44,13 +47,13 @@ def run_workflow():
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
         
-        print("🧠 1. Gemini กำลังคิดบทมหากาพย์ 60 วินาทีและข้อมูล SEO...")
+        print("🧠 1. Gemini กำลังร่างบทสรุปการเงิน 60 วินาที และข้อมูล SEO...")
         prompt_sys = (
-            "จงสวมบทบาทเป็น Storyteller การเงินระดับไวรัล หัวข้อ: 'ทำไมคนขยันถึงไม่รวย? ความลับที่คน 1% ปกปิดไว้' "
-            "ภารกิจ: สร้างสคริปต์ 20 ท่อน (ท่อนละ 3 วินาที) ที่เล่าเรื่องได้น่าติดตามและจบใน 60 วินาที "
+            "จงสวมบทบาทเป็นมือโปรทำคลิป Shorts การเงิน หัวข้อ: 'ทำไมคนรวยถึงรวยขึ้น? ความลับของดอกเบี้ยทบต้น' "
+            "ภารกิจ: สร้างสคริปต์ 20 ท่อน (ท่อนละ 3 วินาที) ที่เล่าเรื่องได้น่าติดตามและสรุปจบใน 60 วินาที "
             "กฎเหล็ก:\n"
-            "1. บทพากย์ (text): ภาษาไทยธรรมชาติที่มีน้ำหนัก มีจังหวะหยุดพัก '...' และเน้นเสียง '!' (ประมาณ 20-25 คำต่อท่อนเพื่อให้ยาวพอดี 3 วินาที)\n"
-            "2. คำสั่งวาดรูป (prompt): ภาษาอังกฤษที่อธิบาย 'เหตุการณ์และอารมณ์' สลับภาพตัวละครและสัญลักษณ์การเงิน\n"
+            "1. บทพากย์ (text): ภาษาไทยธรรมชาติที่มีน้ำหนัก มีจังหวะหยุดพัก '...' และเน้นเสียง '!' (ต้องยาวประมาณ 20-25 คำต่อท่อนเพื่อให้ยาวพอดี 3 วินาที)\n"
+            "2. คำสั่งวาดรูป (prompt): ภาษาอังกฤษที่อธิบาย 'เหตุการณ์และอารมณ์' สลับภาพตัวละครและสัญลักษณ์การเงินให้หลากหลาย\n"
             "3. ซับไตเติล (caption): คำไทย 1-2 คำสั้นๆ ให้เด้งขึ้นมาทีละตัวตามจังหวะพูด\n"
             "4. ข้อมูลเสริม: เขียน Description ที่น่าดึงดูด และ Hashtags 5-7 อัน\n"
             "ส่งผลลัพธ์เป็น JSON: {\"title\": \"...\", \"desc\": \"...\", \"tags\": \"...\", \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\", \"caption\": \"...\"}]}"
@@ -59,22 +62,24 @@ def run_workflow():
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
 
         print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ (ชาย) แบบเน้นอารมณ์เล่าเรื่อง...")
+        # รวมบทพูดและใส่จุดเว้นวรรคให้สมจริง
         full_voice = " . . . ".join([s['text'] for s in data['scenes']])
         subprocess.run(f'edge-tts --rate=-3% --voice "th-TH-NiwatNeural" --text "{full_voice}" --write-media "v.mp3"', shell=True, check=True)
 
-        print(f"🖼️ 3. วาดภาพ 20 ฉากแบบขนาน (Parallel Mode 🚀)...")
+        print(f"🖼️ 3. วาดภาพ 20 ฉากแบบมหาอุด (จะนานหน่อยแต่ภาพสวยครบ)...")
         tasks = [(s['prompt'], f"i_{i}.jpg", i+1) for i, s in enumerate(data['scenes'])]
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            list(executor.map(download_image_parallel, tasks))
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            list(executor.map(download_image_ultra, tasks))
 
-        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้เรื่องฟอนต์ + ผสมเสียงเพลง)...")
-        actual_font = get_font_name("font.ttf")
+        print("🎬 4. ประกอบวิดีโอ 60 วินาที (ซับเด้งไทย + ซูม Cinematic + เพลงประกอบ)...")
+        # ดึงชื่อฟอนต์ไทยจากไฟล์ font.ttf
+        actual_font = get_font_family("font.ttf")
         
         with open("subs.ass", "w", encoding="utf-8-sig") as f:
             f.write("[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\n\n")
             f.write("[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n")
-            # ตั้งค่าซับเหลืองนีออน ขอบดำหนา วางกึ่งกลางจอ
-            f.write(f"Style: PopUp,{actual_font},150,&H0000E6FF,&H00FFFFFF,&H00000000,&H60000000,-1,0,0,0,100,100,0,0,1,18,12,2,80,80,450,1\n\n")
+            # ตั้งค่าซับเหลืองนีออน ขอบดำหนา วางกึ่งกลางจอ (Alignment 2)
+            f.write(f"Style: PopUp,{actual_font},160,&H0000E6FF,&H00FFFFFF,&H00000000,&H60000000,-1,0,0,0,100,100,0,0,1,18,12,2,80,80,450,1\n\n")
             f.write("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
             for i in range(20):
                 start, end = i * 3, (i + 1) * 3
@@ -87,7 +92,8 @@ def run_workflow():
         # 📌 FFmpeg: ผสมเสียงพากย์ + เพลงประกอบ + ซูม Cinematic + ล็อกเวลา 60 วิ
         has_bg = os.path.exists("bg.mp3")
         music_input = "-i bg.mp3" if has_bg else ""
-        audio_filter = "-filter_complex \"[1:a]volume=1.0[a1];[2:a]volume=0.1[a2];[a1][a2]amix=inputs=2:duration=first[a]\" -map 0:v -map \"[a]\"" if has_bg else "-c:a aac"
+        # ปรับความดังเพลงประกอบที่ 8% (0.08) เพื่อไม่ให้กลบเสียงพูด
+        audio_filter = "-filter_complex \"[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]\" -map 0:v -map \"[a]\"" if has_bg else "-c:a aac"
         
         cmd = (
             f"ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 {music_input} "
@@ -113,7 +119,7 @@ def run_workflow():
                 },
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจมหากาพย์สำเร็จ! ทุกอย่างครบจบในคลิปเดียวครับ")
+            print("✨ ภารกิจมหากาพย์สำเร็จ! ทุกรายละเอียดครบจบในคลิปเดียวครับ")
 
     except Exception as e:
         print(f"‼️ ขัดข้องที่: {str(e)}")
