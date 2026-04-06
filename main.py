@@ -11,46 +11,56 @@ SCENE_COUNT = 5
 SCENE_DURATION = 12 
 VIDEO_PRIVACY = "private"
 
-def fetch_hf_only(prompt, filename, scene_num):
-    """ฟังก์ชันสั่งวาดรูปจากที่อยู่ใหม่ (router.huggingface.co) ตามที่ Error แจ้งมา"""
-    print(f"   ⏳ ฉากที่ {scene_num}: กำลังสั่ง Hugging Face SDXL วาดรูป (New Endpoint)...")
+def fetch_hf_smart(prompt, filename, scene_num):
+    """ระบบวาดรูปอัจฉริยะ: ลอง SDXL ถ้าพัง (404/503) จะสลับไป SD 1.5 ทันที"""
+    print(f"   ⏳ ฉากที่ {scene_num}: กำลังสั่ง Hugging Face วาดรูป...")
     
     hf_token = os.getenv("HF_TOKEN")
     if not hf_token:
-        print("      ❌ Error: ไม่พบ HF_TOKEN ใน GitHub Secrets!")
+        print("      ❌ Error: ไม่พบ HF_TOKEN!")
         return False
         
-    # ✅ เปลี่ยนที่อยู่ตามที่ Error 410 แจ้งมา: ใช้ router.huggingface.co
-    api_url = "https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+    # รายชื่อโมเดลที่เราจะลอง (เรียงจากสวยสุดไปหาตัวที่ติดง่ายสุด)
+    # เราจะกลับไปใช้ Endpoint มาตรฐานแต่ปรับ Path ให้ถูกต้อง
+    models = [
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        "runwayml/stable-diffusion-v1-5",
+        "prompthero/openjourney"
+    ]
+    
     headers = {"Authorization": f"Bearer {hf_token.strip()}"}
-    
-    # ฝังคำสั่งสไตล์ Anime Meme ที่คุณต้องการ
     base_style = "anime meme style, exaggerated expressions, young Asian office worker, messy hair, dramatic, vibrant colors, high contrast"
-    enhanced_prompt = f"{prompt}, {base_style}, 4k, cinematic lighting"
-    
-    for attempt in range(5):
+    enhanced_prompt = f"{prompt}, {base_style}, 4k"
+
+    for model in models:
+        api_url = f"https://api-inference.huggingface.co/models/{model}"
         try:
+            print(f"      🎨 พยายามใช้โมเดล: {model.split('/')[-1]}...")
             response = requests.post(api_url, headers=headers, json={"inputs": enhanced_prompt}, timeout=60)
             
             if response.status_code == 200:
                 if response.headers.get('Content-Type', '').startswith('image'):
                     img = Image.open(io.BytesIO(response.content)).convert('RGB')
                     img.save(filename, 'JPEG', quality=95)
-                    print(f"      ✅ สำเร็จ! ได้ภาพ AI คุณภาพสูง")
+                    print(f"      ✅ สำเร็จ! ได้ภาพจาก {model.split('/')[-1]}")
                     return True
-                else:
-                    print(f"      ⚠️ ได้รับข้อมูลที่ไม่ใช่รูปภาพ: {response.text[:200]}")
-            elif response.status_code == 503 or response.status_code == 424:
-                # กรณีโมเดลกำลังโหลด หรือ Overload ให้รอแล้วลองใหม่
-                print(f"      🔄 โมเดลกำลังเตรียมตัว... รอ 20 วินาที (ครั้งที่ {attempt+1})")
-                time.sleep(20)
+            elif response.status_code == 503:
+                wait_time = response.json().get('estimated_time', 20)
+                print(f"      🔄 โมเดลกำลังโหลด... รอ {int(wait_time)} วินาที")
+                time.sleep(int(wait_time) + 2)
+                # ลองตัวเดิมอีกรอบหลังรอ
+                response = requests.post(api_url, headers=headers, json={"inputs": enhanced_prompt}, timeout=60)
+                if response.status_code == 200:
+                    img = Image.open(io.BytesIO(response.content)).convert('RGB')
+                    img.save(filename, 'JPEG', quality=95)
+                    return True
             else:
-                print(f"      ❌ API Error {response.status_code}: {response.text}")
-                break 
+                print(f"      ⚠️ {model.split('/')[-1]} ตอบกลับ Error {response.status_code} (กำลังสลับตัวใหม่...)")
+                continue # ลองโมเดลถัดไปใน List
                 
         except Exception as e:
             print(f"      ❌ พังที่ระบบเชื่อมต่อ: {str(e)}")
-            time.sleep(5)
+            continue
             
     return False
 
@@ -60,11 +70,9 @@ def run_workflow():
         client = genai.Client(api_key=api_key.strip())
         
         print("🧠 1. Gemini กำลังสุ่มหัวข้อการเงินจริงและเขียนบท (Anime Meme Style)...")
-        # สุ่มเนื้อหาการเงินจริง + สไตล์ Anime ฮาๆ
         prompt_sys = (
-            "Act as a professional financial advisor. Randomly select ONE real financial concept (e.g., DCA, Inflation, Compound Interest). "
-            "Create a 60s Thai script with 5 scenes. Use funny, relatable anime meme tone. "
-            "Each scene must have: 1. Funny Thai voiceover. 2. Dramatic image prompt for the scene. "
+            "Act as a professional financial advisor. Randomly select ONE real financial concept. "
+            "Create a 60s Thai script with 5 scenes. Funny anime meme tone. "
             "Output STRICT JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\"}]}"
         )
         response = client.models.generate_content(model=MODEL_ID, contents=prompt_sys)
@@ -75,24 +83,19 @@ def run_workflow():
         full_text = " ".join([s['text'] for s in data['scenes'][:SCENE_COUNT]])
         subprocess.run(f'edge-tts --rate=-5% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        print("🖼️ 3. เข้าสู่กระบวนการวาดภาพ AI (Hugging Face Only)...")
+        print("🖼️ 3. เข้าสู่กระบวนการวาดภาพ AI (Multi-Model HF)...")
         for i, sc in enumerate(data['scenes'][:SCENE_COUNT]):
-            success = fetch_hf_only(sc['prompt'], f"i_{i}.jpg", i+1)
+            success = fetch_hf_smart(sc['prompt'], f"i_{i}.jpg", i+1)
             if not success:
-                print(f"\n‼️ หยุดการทำงาน: ไม่สามารถสร้างภาพฉากที่ {i+1} ได้")
+                print(f"\n‼️ หยุดการทำงาน: ไม่สามารถวาดรูปฉากที่ {i+1} ได้จากทุกโมเดล")
                 sys.exit(1)
 
-        print("🎬 4. กำลังประกอบ Video (60 วินาที)...")
+        print("🎬 4. กำลังประกอบ Video...")
         with open("l.txt", "w") as f:
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration {SCENE_DURATION}\n")
             f.write(f"file 'i_{SCENE_COUNT-1}.jpg'") 
         
-        cmd = (
-            "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
-            "-vf \"scale=1080:1920,setsar=1,zoompan=z='min(zoom+0.002,1.3)':d=300:s=1080x1920\" "
-            "-c:v libx264 -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4"
-        )
-        subprocess.run(cmd, shell=True, check=True)
+        subprocess.run("ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 -vf \"scale=1080:1920,setsar=1\" -c:v libx264 -pix_fmt yuv420p -shortest final.mp4", shell=True, check=True)
 
         print(f"🚀 5. อัปโหลดสู่ YouTube...")
         if os.path.exists('token.json'):
@@ -104,7 +107,7 @@ def run_workflow():
                 body={"snippet": {"title": data['title'], "categoryId": "27"}, "status": {"privacyStatus": VIDEO_PRIVACY}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ! ไปดูผลงานใน Studio ได้เลยครับ")
+            print("✨ ภารกิจสำเร็จ!")
 
     except Exception as e:
         print(f"‼️ พังที่: {str(e)}")
