@@ -1,4 +1,4 @@
-import os, re, json, subprocess, requests, sys, time, random, io
+import os, re, json, subprocess, sys, time, io
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
@@ -6,100 +6,79 @@ from googleapiclient.http import MediaFileUpload
 from PIL import Image, ImageDraw
 
 # --- ⚙️ การตั้งค่าคลิป ---
-MODEL_ID = 'models/gemini-2.5-flash'
-SCENE_COUNT = 5   # ปรับเป็น 5 ฉากตามสคริปต์
-SCENE_DURATION = 12 # ฉากละ 12 วินาที = 60 วินาทีพอดี
+SCENE_COUNT = 5
+SCENE_DURATION = 12 
 VIDEO_PRIVACY = "private"
 
-def validate_and_save(img_data, filename):
-    """ฟอกไฟล์ภาพ ป้องกันจอดำและ Error 69"""
-    try:
-        if len(img_data) < 15000: return False 
-        img = Image.open(io.BytesIO(img_data))
-        img = img.convert('RGB') 
-        img.save(filename, 'JPEG', quality=95)
-        return True
-    except:
-        return False
-
-def create_emergency_bg(filename, scene_num):
-    """แผนไม้ตาย ถ้าระบบวาดรูปพังหมด"""
-    img = Image.new('RGB', (1080, 1920), color=(30, 20, 40))
+def create_emergency_bg(filename, scene_num, error_msg="Error"):
+    """ถ้าโควตาวาดรูปเต็ม จะวาดสไลด์บอกฉากแทน"""
+    img = Image.new('RGB', (1080, 1920), color=(20, 30, 50))
     d = ImageDraw.Draw(img)
-    d.rectangle([40, 40, 1040, 1880], outline=(255, 100, 100), width=15)
-    d.text((100, 900), f"ANIME SCENE {scene_num}\nSystem Error", fill=(255, 100, 100))
-    img.save(filename, 'JPEG', quality=95)
+    d.rectangle([50, 50, 1030, 1870], outline=(255, 215, 0), width=15)
+    d.text((100, 900), f"SCENE {scene_num}\nVisual Placeholder", fill=(255, 215, 0))
+    img.save(filename, 'JPEG')
 
-def fetch_anime_image(action_prompt, filename, scene_num):
-    """ระบบวาดภาพสไตล์ Anime Meme มนุษย์เงินเดือน"""
-    print(f"   ⏳ ฉากที่ {scene_num}: กำลังวาดภาพ Anime Meme...")
+def fetch_gemini_image(client, prompt, filename, scene_num):
+    """⭐️ สุดยอดระบบวาดภาพ: ใช้โมเดล Imagen 3 ของ Google ผ่าน API โดยตรง"""
+    print(f"   ⏳ ฉากที่ {scene_num}: สั่ง Gemini (Imagen 3) วาดรูป...")
     
-    # 📌 ฝัง Base Style ที่คุณต้องการลงไปในทุกรูป
-    base_style = "anime meme style, young Asian office worker 25 years old, messy hair, over-exaggerated emotion, funny chaotic energy, vibrant colors, high contrast"
-    full_prompt = f"{action_prompt}, {base_style}"
+    # คำสั่งภาพสไตล์ Cinematic 3D เพื่อความพรีเมียม
+    epic_prompt = f"{prompt}, highly detailed 3D render, cinematic lighting, masterpiece, finance concept"
     
-    clean_p = re.sub(r'[^\w\s,]', '', full_prompt).strip()
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-
-    # 1. ใช้ AI Generator (Flux) ที่เก่งเรื่องลายเส้นอนิเมะ
     try:
-        # ล็อก Seed เป็นตัวเลขชุดเดียวกันเพื่อให้หน้าตาตัวละครใกล้เคียงกันทุกฉาก
-        seed = 8888 + scene_num 
-        url_pol = f"https://pollinations.ai/p/{clean_p.replace(' ', '%20')}?width=1080&height=1920&model=flux&seed={seed}&nologo=true"
-        img_data = requests.get(url_pol, headers=headers, timeout=30).content
-        if validate_and_save(img_data, filename):
-            print(f"   ✅ ได้ภาพ Anime Meme ฉากที่ {scene_num} แล้ว!")
+        # เรียกใช้ Imagen 3 ผ่าน google-genai SDK
+        result = client.models.generate_images(
+            model='imagen-3.0-generate-002',
+            prompt=epic_prompt,
+            config=dict(
+                number_of_images=1,
+                aspect_ratio="9:16", # กำหนดเป็นแนวตั้ง Shorts ได้เลย
+                output_mime_type="image/jpeg",
+            )
+        )
+        
+        # ถ้าระบบส่งภาพกลับมาสำเร็จ
+        if result.generated_images:
+            img_bytes = result.generated_images[0].image.image_bytes
+            img = Image.open(io.BytesIO(img_bytes))
+            img.save(filename, 'JPEG', quality=95)
+            print(f"   ✅ สำเร็จ! ได้ภาพคุณภาพสูงจาก Gemini API")
             return True
-    except: pass
+            
+    except Exception as e:
+        print(f"   ❌ Gemini Image API ล้มเหลว (อาจติดโควตาหรือ Safety): {e}")
 
-    # 2. แผนสำรอง: ดึงรูป Anime ฮาๆ จาก Lexica
-    try:
-        url_lexica = f"https://lexica.art/api/v1/search?q=funny+anime+office+worker+reaction"
-        res = requests.get(url_lexica, headers=headers, timeout=20)
-        if res.status_code == 200:
-            data = res.json()
-            if 'images' in data and len(data['images']) > 0:
-                img_url = random.choice(data['images'][:5])['src']
-                img_data = requests.get(img_url, timeout=20).content
-                if validate_and_save(img_data, filename):
-                    print(f"   ✅ ได้ภาพ Anime สำรองจาก Lexica")
-                    return True
-    except: pass
-
+    # แผนสำรอง
     create_emergency_bg(filename, scene_num)
-    return True
+    return False
 
 def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
         
-        print("🧠 1. AI Director กำลังเขียนบทจาก 5 ฉากที่คุณกำหนด...")
+        print("🧠 1. Gemini กำลังสุ่มหัวข้อการเงินจริง และเขียนบท...")
         
-        # 📌 สั่งให้ Gemini เขียนบทตาม Storyline 5 ฉากของคุณเป๊ะๆ
+        # 📌 สั่งให้ AI สุ่มเนื้อหาการเงิน "ของจริง" 
         prompt_sys = (
-            "Act as a funny viral YouTube creator. Create a 60-second Thai story script based EXACTLY on these 5 scenes:\n"
-            "1: extreme happy face, checking salary notification, glowing background\n"
-            "2: suddenly shocked, surrounded by flying bills (rent, credit card), comedic panic\n"
-            "3: screaming internally, looking at empty bank balance on phone\n"
-            "4: dead inside expression, sitting in dark room eating instant noodles, ghost leaving body\n"
-            "5: fake motivation mode, determined pose holding notebook 'budget plan', messy room\n\n"
-            "For each scene, give me: 1. A relatable and funny Thai voiceover text. 2. The specific English action to draw the anime image.\n"
+            "Act as a professional financial advisor. Randomly select ONE real financial concept (e.g., Compound Interest, DCA, Inflation, Emergency Fund, Asset Allocation, Dividend investing). "
+            "Create a 60-second Thai YouTube Shorts script explaining this real concept with factual information. "
+            f"Structure into {SCENE_COUNT} scenes. "
+            "For each scene, provide: 1. Thai voiceover text. 2. An English prompt to generate a 3D cinematic image representing the scene. "
             "Output STRICT JSON: {\"title\": \"...\", \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\"}]}"
         )
-        response = client.models.generate_content(model=MODEL_ID, contents=prompt_sys)
+        response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_sys)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        print(f"🎬 หัวข้อคลิป: {data['title']}")
+        print(f"🎬 หัวข้อคลิปวันนี้: {data['title']}")
 
-        print("🎙️ 2. สร้างเสียงพากย์ภาษาไทย (ฟีลลิ่งตลกขบขัน)...")
-        # เปลี่ยนเป็น Rate 0% หรือ -5% ให้เสียงฟังดูเป็นธรรมชาติขึ้นสำหรับคลิปตลก
+        print("🎙️ 2. สร้างเสียงพากย์ภาษาไทย...")
         full_text = " ".join([s['text'] for s in data['scenes'][:SCENE_COUNT]])
-        subprocess.run(f'edge-tts --rate=-5% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
+        subprocess.run(f'edge-tts --rate=-10% --voice "th-TH-NiwatNeural" --text "{full_text}" --write-media "v.mp3"', shell=True, check=True)
 
-        print("🖼️ 3. เข้าสู่กระบวนการวาดภาพ Anime 5 ฉาก...")
+        print("🖼️ 3. เข้าสู่กระบวนการวาดภาพด้วย Imagen 3...")
         for i, sc in enumerate(data['scenes'][:SCENE_COUNT]):
-            # ส่งคำสั่งเฉพาะของฉากนั้นๆ ไปให้ฟังก์ชันวาดรูป
-            fetch_anime_image(sc['prompt'], f"i_{i}.jpg", i+1)
+            # ส่ง API Key ตัวเดิมไปสั่งวาดรูป
+            fetch_gemini_image(client, sc['prompt'], f"i_{i}.jpg", i+1)
 
         print("🎬 4. กำลังประกอบ Video (60 วินาที)...")
         with open("l.txt", "w") as f:
@@ -108,7 +87,7 @@ def run_workflow():
         
         cmd = (
             "ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 "
-            "-vf \"scale=1080:1920,setsar=1,zoompan=z='min(zoom+0.002,1.3)':d=300:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920\" "
+            "-vf \"scale=1080:1920,setsar=1,zoompan=z='min(zoom+0.0015,1.2)':d=300:x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':s=1080x1920\" "
             "-c:v libx264 -pix_fmt yuv420p -r 25 -c:a aac -shortest final.mp4"
         )
         subprocess.run(cmd, shell=True, check=True)
@@ -122,10 +101,10 @@ def run_workflow():
         try:
             youtube.videos().insert(
                 part="snippet,status",
-                body={"snippet": {"title": data['title'], "categoryId": "23"}, "status": {"privacyStatus": VIDEO_PRIVACY}}, # หมวดหมู่ Comedy
+                body={"snippet": {"title": data['title'], "categoryId": "27"}, "status": {"privacyStatus": VIDEO_PRIVACY}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ! ไปดูผลงานมนุษย์เงินเดือนใน Studio ได้เลยครับ")
+            print("✨ ภารกิจสำเร็จ! เข้าไปชมวิดีโอความรู้การเงินใน Studio ได้เลยครับ")
         except Exception as e:
             if "uploadLimitExceeded" in str(e): print("\n⚠️ Quota YouTube เต็ม! รอ 24 ชม.")
             else: raise e
