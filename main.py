@@ -10,8 +10,8 @@ SCENE_COUNT = 6
 SCENE_DURATION = 10 
 VIDEO_PRIVACY = "private"
 
-# 📌 Character อ้างอิง: ชายไทย 45 ปี สไตล์การ์ตูนคุณภาพสูง (Anime/Webtoon)
-CHAR_ANCHOR = "A 45-year-old Thai male business owner, highly detailed anime style, expressive face, vibrant colors, modern webtoon style, high quality illustration"
+# 📌 อัปเดตตัวละครคงที่: ล็อกสเปกสัดส่วนร่างกาย ตา และมือให้เป๊ะที่สุด
+CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
 def install_and_get_font():
     """ติดตั้งฟอนต์ไทยลงระบบ OS ป้องกันฟอนต์เพี้ยน 100%"""
@@ -34,12 +34,12 @@ def install_and_get_font():
     return font_family
 
 def fetch_image_cartoon(prompt, filename, scene_num):
-    """วาดภาพแนวกาตูนคุณภาพสูง (Anime Style)"""
-    print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพสไตล์การ์ตูน...")
+    """วาดภาพแนวกาตูนคุณภาพสูง พร้อมบังคับรายละเอียดมือและตา"""
+    print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพสไตล์การ์ตูนที่ลงรายละเอียดชัดเจน...")
     clean_p = re.sub(r'[^\w\s]', '', prompt).strip().replace(' ', '%20')
     
-    # บังคับสไตล์ให้เป็นการ์ตูนคุณภาพสูง แสงเงาสวยงาม
-    style = "high-quality anime style, stunning visual, dramatic lighting, detailed background, masterpiece"
+    # บังคับสไตล์ให้เป็นการ์ตูนคุณภาพสูง และย้ำเรื่องโครงสร้างร่างกายอีกรอบ
+    style = "high-quality anime style, stunning visual, dramatic lighting, detailed background, perfect hands, detailed eyes, masterpiece"
     url = f"https://image.pollinations.ai/prompt/{clean_p},{CHAR_ANCHOR},{style}?width=1080&height=1920&seed={random.randint(1,999999)}&nologo=true&model=flux"
     
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -62,7 +62,7 @@ def run_workflow():
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
         
-        print("🧠 1. Gemini กำลังเขียนบทมหากาพย์ 6 ฉาก (60 วินาที)...")
+        print("🧠 1. Gemini กำลังเขียนบทและกำหนดภาพแต่ละเหตุการณ์ให้ชัดเจน...")
         prompt_sys = (
             "คุณคือผู้เชี่ยวชาญด้านการสร้างวิดีโอ YouTube Shorts ระดับไวรัล และการเล่าเรื่อง\n"
             "เป้าหมาย: สร้างคอนเทนต์วิดีโอความยาว 60 วินาที ที่ดึงดูดคนดูตั้งแต่ 3 วินาทีแรก\n"
@@ -76,7 +76,7 @@ def run_workflow():
             "- ฉาก 6: บทเรียน + ทิ้งท้าย (มีข้อคิดชัดเจน)\n\n"
             "กฎเหล็กแต่ละฉาก:\n"
             "1. บทพากย์ (text): ภาษาไทย โทนเสียงจริงจัง มีอารมณ์ (ความยาว 40-50 คำต่อฉาก เพื่อให้พูดจบใน 10 วินาที)\n"
-            "2. คำสั่งวาดรูป (prompt): ภาษาอังกฤษ อธิบายภาพแบบ Anime/Cartoon style สลับภาพชายไทยวัย 45 ปีกับภาพเหตุการณ์\n"
+            "2. คำสั่งวาดรูป (prompt): ภาษาอังกฤษ บรรยายเหตุการณ์ สภาพแวดล้อม และอารมณ์ให้ **เห็นภาพชัดเจนที่สุด** (เช่น 'A man sitting at a dark desk holding a glowing phone, looking stressed with unpaid bills'). หากมีฉากที่เห็นมือ ให้เน้น 'anatomically correct hands holding [object]'. สลับภาพชายวัย 29 ปี กับภาพเหตุการณ์ให้เข้ากับบท\n"
             "3. ซับไตเติล (caption): คำไทยสั้นๆ 1-2 คำ กระแทกอารมณ์ เช่น 'พัง', 'เครียด', 'หมดตัว'\n\n"
             "ข้อมูลเสริม (SEO):\n"
             "1. title: น่าสนใจ กระตุ้นให้คลิก (Curiosity + Emotion)\n"
@@ -91,12 +91,12 @@ def run_workflow():
         full_voice = " . . . ".join([s['text'] for s in data['scenes']])
         subprocess.run(f'edge-tts --rate=-3% --voice "th-TH-NiwatNeural" --text "{full_voice}" --write-media "v.mp3"', shell=True, check=True)
 
-        print("🖼️ 3. วาดภาพการ์ตูนคุณภาพสูง 6 ฉาก...")
+        print("🖼️ 3. วาดภาพการ์ตูนคุณภาพสูง 6 ฉาก (เน้นรายละเอียดสัดส่วน)...")
         for i, sc in enumerate(data['scenes']):
             fetch_image_cartoon(sc['prompt'], f"i_{i}.jpg", i+1)
             time.sleep(3)
 
-        print("🎬 4. ประกอบวิดีโอ 60 วินาที (ซับขึ้นแล้วหายไป)...")
+        print("🎬 4. ประกอบวิดีโอ 60 วินาที (ซับขึ้น 3 วิแรกแล้วหายไป)...")
         font_family = install_and_get_font()
         
         with open("subs.ass", "w", encoding="utf-8-sig") as f:
@@ -145,7 +145,7 @@ def run_workflow():
                 },
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ! คลิปแนวกาตูน 60 วิ ซับเด้งแล้วหาย พร้อมออนไลน์!")
+            print("✨ ภารกิจสำเร็จ! คลิปหนุ่มวัย 29 สัดส่วนเป๊ะ ซับเด้งแล้วหาย พร้อมออนไลน์!")
 
     except Exception as e:
         print(f"‼️ ขัดข้องที่: {str(e)}")
