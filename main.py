@@ -1,4 +1,27 @@
-import os, re, json, subprocess, requests, sys, time, random, shutil, traceback, asyncio
+import sys, subprocess, os
+
+# --- 🛠️ 1. ระบบซ่อมแซมตัวเอง: ติดตั้ง Library ที่หายไปอัตโนมัติ ---
+# ปิดตายปัญหา ModuleNotFoundError (เช่น ไม่มี edge-tts)
+def auto_install_requirements():
+    packages = {
+        "google.genai": "google-genai",
+        "edge_tts": "edge-tts",
+        "requests": "requests",
+        "PIL": "pillow",
+        "googleapiclient": "google-api-python-client",
+        "google_auth_oauthlib": "google-auth-oauthlib"
+    }
+    for module_name, pip_name in packages.items():
+        try:
+            __import__(module_name)
+        except ImportError:
+            print(f"📦 ระบบกำลังติดตั้ง '{pip_name}' ที่ขาดหายไปอัตโนมัติ...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name, "--quiet"])
+
+auto_install_requirements()
+
+# --- 🛠️ 2. Import Libraries ตามปกติ ---
+import re, json, time, random, shutil, traceback, asyncio, urllib.request
 import edge_tts
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
@@ -6,29 +29,28 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image
 
-# --- 🛠️ แก้ปัญหา Windows Terminal อ่านภาษาไทยไม่ได้ ---
+# --- 🛠️ 3. แก้ปัญหา Windows Terminal อ่านภาษาไทยไม่ได้ ---
 if sys.stdout.encoding.lower() != 'utf-8':
-    sys.stdout.reconfigure(encoding='utf-8')
+    try: sys.stdout.reconfigure(encoding='utf-8')
+    except: pass
 if sys.stderr.encoding.lower() != 'utf-8':
-    sys.stderr.reconfigure(encoding='utf-8')
+    try: sys.stderr.reconfigure(encoding='utf-8')
+    except: pass
 
 # --- ⚙️ ตั้งค่าความยาว (6 ฉาก x 10 วินาที = 60 วินาทีพอดี) ---
 SCENE_COUNT = 6   
 SCENE_DURATION = 10 
 VIDEO_PRIVACY = "private"
-
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
 def ensure_font_exists():
-    """✅ ดึงฟอนต์ Kanit จาก Google โดยตรง (การันตีมีฟอนต์ใช้แน่นอน)"""
+    """✅ ดึงฟอนต์ Kanit แบบฝังแกนกลาง ปิดตายปัญหา FFmpeg หาฟอนต์ไม่เจอ"""
     font_filename = "font.ttf"
     if not os.path.exists(font_filename) or os.path.getsize(font_filename) < 10000:
-        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย (Kanit-Bold)...")
+        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย (Kanit-Bold) เพื่อใช้ฝังซับไตเติล...")
         try:
             url = "https://github.com/google/fonts/raw/main/ofl/kanit/Kanit-Bold.ttf"
-            r = requests.get(url, allow_redirects=True, timeout=30)
-            with open(font_filename, 'wb') as f:
-                f.write(r.content)
+            urllib.request.urlretrieve(url, font_filename)
             print("✅ ดาวน์โหลดฟอนต์สำเร็จสมบูรณ์!")
         except Exception as e:
             print(f"⚠️ ดาวน์โหลดฟอนต์ล้มเหลว: {e}")
@@ -57,8 +79,8 @@ def fetch_image_cartoon(prompt, filename, scene_num):
     Image.new('RGB', (1080, 1920), color=(15, 15, 15)).save(filename, 'JPEG')
     return True
 
-# ⚠️ ฟังก์ชันใหม่: สร้างเสียงพากย์ด้วย Python โดยตรง ไม่ผ่าน Command Line
 async def generate_voice(text, output_file):
+    """สร้างเสียงพากย์ด้วย API ตรงๆ ป้องกัน Error คำสั่งหายบน Windows"""
     communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
     await communicate.save(output_file)
 
@@ -66,7 +88,7 @@ def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret")
+            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret บน GitHub หรือ Environment Variable")
             
         client = genai.Client(api_key=api_key.strip())
         
@@ -119,10 +141,10 @@ def run_workflow():
 
         print(f"📌 หัวข้อที่ได้: {data.get('title', 'Viral Finance Shorts')}")
         
-        print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ ด้วย Python Native API (ปลอดภัย 100%)...")
+        print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ ด้วย Python Native API...")
         full_voice = " . . . ".join([str(s.get('text', '')) for s in data['scenes']])
         
-        # ⚠️ เรียกใช้งาน edge-tts ผ่านคำสั่ง Native Python 
+        # รันสร้างเสียงอย่างปลอดภัย
         asyncio.run(generate_voice(full_voice, "v.mp3"))
         print("   ✅ สร้างเสียงเสร็จสมบูรณ์!")
 
@@ -136,17 +158,21 @@ def run_workflow():
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
+        # การันตีโหลดฟอนต์ 100%
         ensure_font_exists()
 
+        # ⚠️ จัดรูปแบบ Path ฟอนต์ระดับพระกาฬให้ FFmpeg บน Windows ไม่งอแง
         drawtext_filters = []
         font_opt = ""
         if os.path.exists("font.ttf"):
-            abs_font_path = os.path.abspath("font.ttf").replace('\\', '/').replace(':', r'\:')
-            font_opt = f"fontfile={abs_font_path}:"
+            # แปลง Path ให้เป็น Forward Slash ทั้งหมด (FFmpeg ชอบแบบนี้)
+            abs_font_path = os.path.abspath("font.ttf").replace('\\', '/')
+            font_opt = f"fontfile='{abs_font_path}':"
         
         for i in range(SCENE_COUNT):
             start_time = i * SCENE_DURATION
             end_time = start_time + 3  
+            # ล้างอักขระขยะที่อาจทำให้ FFmpeg รวน
             caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").replace("\\", "").strip()
             if not caption: continue
             
@@ -179,7 +205,7 @@ def run_workflow():
             "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", "60", "final.mp4"
         ])
         
-        print("   ✅ กำลังรัน FFmpeg...")
+        print("   ✅ กำลังรัน FFmpeg ตัดต่อคลิป...")
         subprocess.run(cmd, check=True, capture_output=True, text=True)
 
         print(f"🚀 5. อัปโหลดสู่ YouTube พร้อม SEO...")
@@ -211,7 +237,7 @@ def run_workflow():
                 print("✨ ภารกิจสำเร็จ 100%! อัปโหลดขึ้น YouTube เรียบร้อยแล้ว!")
             except Exception as e:
                 print(f"‼️ อัปโหลด YouTube พัง: {e}")
-                print("✨ วิดีโอ final.mp4 สร้างเสร็จสมบูรณ์แล้ว สามารถนำไปใช้อัปโหลดเองได้!")
+                print("✨ แต่วิดีโอ final.mp4 สร้างเสร็จสมบูรณ์แล้ว สามารถนำไปใช้อัปโหลดเองได้!")
         else:
             print("⚠️ ไม่พบ Token สำหรับ YouTube -> สร้างคลิป final.mp4 เสร็จสมบูรณ์แล้ว!")
 
