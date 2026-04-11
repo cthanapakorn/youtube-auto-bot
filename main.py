@@ -18,6 +18,21 @@ VIDEO_PRIVACY = "private"
 
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
+def ensure_font_exists():
+    """✅ ปิดตายปัญหาฟอนต์เสีย/หาฟอนต์ไม่เจอ โดยการดึงฟอนต์ Kanit จาก Google โดยตรง"""
+    font_filename = "font.ttf"
+    # ถ้าไม่มีไฟล์ หรือไฟล์เล็กผิดปกติ (ไฟล์เสีย) ให้โหลดใหม่
+    if not os.path.exists(font_filename) or os.path.getsize(font_filename) < 10000:
+        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย (Kanit-Bold) เพื่อแก้ปัญหา FFmpeg หาฟอนต์ไม่เจอ...")
+        try:
+            url = "https://github.com/google/fonts/raw/main/ofl/kanit/Kanit-Bold.ttf"
+            r = requests.get(url, allow_redirects=True, timeout=30)
+            with open(font_filename, 'wb') as f:
+                f.write(r.content)
+            print("✅ ดาวน์โหลดฟอนต์สำเร็จสมบูรณ์!")
+        except Exception as e:
+            print(f"⚠️ ดาวน์โหลดฟอนต์ล้มเหลว (จะใช้วิธีเท่าที่มี): {e}")
+
 def fetch_image_cartoon(prompt, filename, scene_num):
     print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพสไตล์การ์ตูน...")
     clean_p = re.sub(r'[^\w\s]', '', str(prompt)).strip().replace(' ', '%20')
@@ -101,7 +116,8 @@ def run_workflow():
         print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ (โทนจริงจัง น่าเชื่อถือ)...")
         full_voice = " . . . ".join([str(s.get('text', '')) for s in data['scenes']])
         
-        tts_cmd = ["edge-tts", "--rate=-3%", "--voice", "th-TH-NiwatNeural", "--text", full_voice, "--write-media", "v.mp3"]
+        # ⚠️ อัปเกรด 1: เรียกใช้ Edge-TTS ผ่าน Python module ตรงๆ ป้องกัน Error คำสั่งหาย
+        tts_cmd = [sys.executable, "-m", "edge_tts", "--rate=-3%", "--voice", "th-TH-NiwatNeural", "--text", full_voice, "--write-media", "v.mp3"]
         subprocess.run(tts_cmd, check=True, capture_output=True, text=True)
 
         print("🖼️ 3. วาดภาพการ์ตูนคุณภาพสูง 6 ฉาก...")
@@ -109,29 +125,29 @@ def run_workflow():
             fetch_image_cartoon(sc.get('prompt', ''), f"i_{i}.jpg", i+1)
             time.sleep(3)
 
-        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้บั๊ก FFmpeg หาฟอนต์ไม่เจอด้วย Absolute Path)...")
+        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้บั๊ก FFmpeg ด้วยระบบ Array)...")
         
         with open("l.txt", "w", encoding="utf-8") as f:
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
-        # ⚠️ แก้ให้ถูกจุด: ดึงที่อยู่ของไฟล์แบบเต็ม (Absolute Path) กัน FFmpeg หาไม่เจอ
+        # การันตีว่ามีไฟล์ฟอนต์แน่นอน
+        ensure_font_exists()
+
+        # ⚠️ อัปเกรด 2: ปรับ Path ฟอนต์ให้เป็นมิตรกับ FFmpeg ขั้นสุด
         drawtext_filters = []
         font_opt = ""
         if os.path.exists("font.ttf"):
-            # ดึง Path เต็ม เช่น C:/Users/name/font.ttf
-            abs_font_path = os.path.abspath("font.ttf").replace("\\", "/")
-            # บังคับ Escape เครื่องหมาย : สำหรับคนใช้ Windows ป้องกัน FFmpeg สับสนคำสั่ง
-            abs_font_path = abs_font_path.replace(":", r"\:")
-            font_opt = f"fontfile='{abs_font_path}':"
-        else:
-            print("⚠️ คำเตือน: ไม่พบไฟล์ font.ttf ในโฟลเดอร์นี้ ซับไตเติลอาจไม่แสดงผล")
+            # แปลงเป็น Absolute Path -> เปลี่ยน \ เป็น / -> ป้องกัน : ด้วย \:
+            abs_font_path = os.path.abspath("font.ttf").replace('\\', '/').replace(':', r'\:')
+            font_opt = f"fontfile={abs_font_path}:"
         
         for i in range(SCENE_COUNT):
             start_time = i * SCENE_DURATION
             end_time = start_time + 3  
             
-            caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").strip()
+            # ล้างเครื่องหมายแปลกปลอมที่อาจทำให้ FFmpeg รวน
+            caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").replace("\\", "").strip()
             if not caption: continue
             
             dt = f"drawtext={font_opt}text='{caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=160:x=(w-text_w)/2:y=(h-text_h)/2+350:enable='between(t,{start_time},{end_time})'"
@@ -143,18 +159,29 @@ def run_workflow():
         if drawtexts_str:
             vf_string += f",{drawtexts_str}"
 
-        has_bg = os.path.exists("bg.mp3")
-        music_input = "-i bg.mp3" if has_bg else ""
-        audio_filter = "-filter_complex \"[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]\" -map 0:v -map \"[a]\"" if has_bg else "-c:a aac"
+        # ⚠️ อัปเกรด 3: สร้างคำสั่งแบบ Array List ปิดตายปัญหา Windows shell แย่งเครื่องหมาย ' '
+        cmd = [
+            "ffmpeg", "-y", 
+            "-f", "concat", "-safe", "0", "-i", "l.txt", 
+            "-i", "v.mp3"
+        ]
         
-        cmd = (
-            f"ffmpeg -y -f concat -safe 0 -i l.txt -i v.mp3 {music_input} "
-            f"-vf \"{vf_string}\" "
-            f"{audio_filter} -c:v libx264 -crf 18 -pix_fmt yuv420p -r 25 -t 60 final.mp4"
-        )
+        if os.path.exists("bg.mp3"):
+            cmd.extend([
+                "-i", "bg.mp3",
+                "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]",
+                "-map", "0:v", "-map", "[a]"
+            ])
+        else:
+            cmd.extend(["-map", "0:v", "-map", "1:a", "-c:a", "aac"])
+
+        cmd.extend([
+            "-vf", vf_string,
+            "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", "60", "final.mp4"
+        ])
         
-        # รัน FFmpeg พร้อมดักจับ Error
-        subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
+        # รัน FFmpeg แบบไร้บั๊ก
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
 
         print(f"🚀 5. อัปโหลดสู่ YouTube พร้อม SEO...")
         creds_data = None
@@ -192,7 +219,7 @@ def run_workflow():
     except subprocess.CalledProcessError as e:
         print("\n" + "="*50)
         print("‼️ ขัดข้องที่โปรแกรมภายนอก (FFmpeg หรือ Edge-TTS พัง)")
-        print(f"💥 คำสั่งที่พัง: {e.cmd}")
+        print(f"💥 คำสั่งที่พัง: {' '.join(e.cmd)}")
         print(f"🔍 [รายละเอียด Error จากระบบ]:\n{e.stderr}")
         print("="*50 + "\n")
         sys.exit(1)
