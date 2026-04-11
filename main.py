@@ -3,7 +3,7 @@ from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from PIL import Image, ImageFont
+from PIL import Image
 
 # --- 🛠️ แก้ปัญหา Windows Terminal อ่านภาษาไทยไม่ได้ (UnicodeEncodeError) ---
 if sys.stdout.encoding.lower() != 'utf-8':
@@ -19,15 +19,11 @@ VIDEO_PRIVACY = "private"
 # 📌 อัปเดตตัวละครคงที่: ล็อกสเปกสัดส่วนร่างกาย ตา และมือให้เป๊ะที่สุด
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
-def install_and_get_font():
-    """ติดตั้งฟอนต์ไทยลงระบบ OS ป้องกันฟอนต์เพี้ยน 100%"""
-    font_family = "Sans"
+def install_font_simple():
+    """ติดตั้งฟอนต์แบบเรียบง่าย ไม่ต้องใช้ PIL ให้วุ่นวาย"""
     if os.path.exists("font.ttf"):
         try:
-            font = ImageFont.truetype("font.ttf")
-            font_family, _ = font.getname()
-            print(f"✅ ตรวจพบฟอนต์ไทย: {font_family}")
-            
+            print(f"✅ ตรวจพบไฟล์ font.ttf กำลังเตรียมใช้งาน...")
             font_dir = os.path.expanduser("~/.fonts")
             os.makedirs(font_dir, exist_ok=True)
             shutil.copy("font.ttf", os.path.join(font_dir, "font.ttf"))
@@ -37,12 +33,13 @@ def install_and_get_font():
                 subprocess.run(["fc-cache", "-f", "-v"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except FileNotFoundError:
                 pass 
-                
         except Exception as e:
-            print(f"⚠️ มีปัญหาการติดตั้งฟอนต์: {e}")
+            print(f"⚠️ มีปัญหาการคัดลอกฟอนต์: {e}")
     else:
         print("‼️ ไม่พบไฟล์ font.ttf (ซับอาจเป็นต่างดาว)")
-    return font_family
+    
+    # ส่งคืนชื่ออะไรก็ได้ เพราะเดี๋ยวเราบังคับ force ในไฟล์ .ass เอา
+    return "MyCustomFont" 
 
 def fetch_image_cartoon(prompt, filename, scene_num):
     """วาดภาพแนวกาตูนคุณภาพสูง พร้อมบังคับรายละเอียดมือและตา"""
