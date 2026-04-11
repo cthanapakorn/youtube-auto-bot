@@ -102,7 +102,6 @@ def run_workflow():
         full_voice = " . . . ".join([str(s.get('text', '')) for s in data['scenes']])
         
         tts_cmd = ["edge-tts", "--rate=-3%", "--voice", "th-TH-NiwatNeural", "--text", full_voice, "--write-media", "v.mp3"]
-        # ⚠️ ดักจับ Error ระดับ Command Line 
         subprocess.run(tts_cmd, check=True, capture_output=True, text=True)
 
         print("🖼️ 3. วาดภาพการ์ตูนคุณภาพสูง 6 ฉาก...")
@@ -110,24 +109,31 @@ def run_workflow():
             fetch_image_cartoon(sc.get('prompt', ''), f"i_{i}.jpg", i+1)
             time.sleep(3)
 
-        print("🎬 4. ประกอบวิดีโอ 60 วินาที (เปลี่ยนใช้ drawtext แก้บั๊กซับพังถาวร)...")
+        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้บั๊ก FFmpeg หาฟอนต์ไม่เจอด้วย Absolute Path)...")
         
         with open("l.txt", "w", encoding="utf-8") as f:
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
-        # ⚠️ แก้ให้ถูกจุด: ใช้ drawtext filter ยิงซับเข้าวิดีโอโดยตรง ไม่ใช้ไฟล์ .ass
+        # ⚠️ แก้ให้ถูกจุด: ดึงที่อยู่ของไฟล์แบบเต็ม (Absolute Path) กัน FFmpeg หาไม่เจอ
         drawtext_filters = []
-        font_opt = "fontfile=font.ttf:" if os.path.exists("font.ttf") else ""
+        font_opt = ""
+        if os.path.exists("font.ttf"):
+            # ดึง Path เต็ม เช่น C:/Users/name/font.ttf
+            abs_font_path = os.path.abspath("font.ttf").replace("\\", "/")
+            # บังคับ Escape เครื่องหมาย : สำหรับคนใช้ Windows ป้องกัน FFmpeg สับสนคำสั่ง
+            abs_font_path = abs_font_path.replace(":", r"\:")
+            font_opt = f"fontfile='{abs_font_path}':"
+        else:
+            print("⚠️ คำเตือน: ไม่พบไฟล์ font.ttf ในโฟลเดอร์นี้ ซับไตเติลอาจไม่แสดงผล")
         
         for i in range(SCENE_COUNT):
             start_time = i * SCENE_DURATION
             end_time = start_time + 3  
-            # ล้างเครื่องหมายที่จะทำให้ Filter พัง (จุลภาค, โคลอน, ซิงเกิลโควท)
+            
             caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").strip()
             if not caption: continue
             
-            # ยิงข้อความกึ่งกลางจอ มีขอบดำหนา 
             dt = f"drawtext={font_opt}text='{caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=160:x=(w-text_w)/2:y=(h-text_h)/2+350:enable='between(t,{start_time},{end_time})'"
             drawtext_filters.append(dt)
             
@@ -147,7 +153,7 @@ def run_workflow():
             f"{audio_filter} -c:v libx264 -crf 18 -pix_fmt yuv420p -r 25 -t 60 final.mp4"
         )
         
-        # ⚠️ ดักจับ Error FFmpeg (พิมพ์ข้อความสีแดงๆ ที่ FFmpeg บ่นออกมาให้คุณเห็นเลย)
+        # รัน FFmpeg พร้อมดักจับ Error
         subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
 
         print(f"🚀 5. อัปโหลดสู่ YouTube พร้อม SEO...")
@@ -183,7 +189,6 @@ def run_workflow():
         else:
             print("⚠️ ไม่พบ Token สำหรับ YouTube -> สร้างคลิป final.mp4 เสร็จสมบูรณ์แล้ว!")
 
-    # 🛑 สุดยอดตัวดักจับ Error: แยกประเภทความผิดพลาดให้เห็นชัดๆ
     except subprocess.CalledProcessError as e:
         print("\n" + "="*50)
         print("‼️ ขัดข้องที่โปรแกรมภายนอก (FFmpeg หรือ Edge-TTS พัง)")
