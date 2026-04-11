@@ -1,9 +1,15 @@
-import os, re, json, subprocess, requests, sys, time, random, shutil
+import os, re, json, subprocess, requests, sys, time, random, shutil, io
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image, ImageFont
+
+# --- 🛠️ แก้ปัญหา Windows Terminal อ่านภาษาไทยไม่ได้ (UnicodeEncodeError) ---
+if sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+if sys.stderr.encoding.lower() != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8')
 
 # --- ⚙️ ตั้งค่าความยาว (6 ฉาก x 10 วินาที = 60 วินาทีพอดี) ---
 SCENE_COUNT = 6   
@@ -26,7 +32,12 @@ def install_and_get_font():
             os.makedirs(font_dir, exist_ok=True)
             shutil.copy("font.ttf", os.path.join(font_dir, "font.ttf"))
             
-            subprocess.run(["fc-cache", "-f", "-v"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # บังคับอัปเดตฟอนต์ (ข้ามไปถ้าเป็น Windows)
+            try:
+                subprocess.run(["fc-cache", "-f", "-v"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except FileNotFoundError:
+                pass 
+                
         except Exception as e:
             print(f"⚠️ มีปัญหาการติดตั้งฟอนต์: {e}")
     else:
@@ -86,10 +97,4 @@ def run_workflow():
                 "1. title: น่าสนใจ กระตุ้นให้คลิก\n"
                 "2. desc: สั้น กระชับ มีคีย์เวิร์ด พร้อมคำแนะนำเพลง background\n"
                 "3. tags: แฮชแท็ก 5 อัน\n"
-                "Output STRICT JSON FORMAT ONLY (Do NOT wrap in 
-http://googleusercontent.com/immersive_entry_chip/0
-
-### 🛡️ สาเหตุที่รอบนี้ไม่พังแน่นอน:
-1. ผมบังคับ Prompt ปิดท้ายเพิ่มไปว่า `Output STRICT JSON FORMAT ONLY (Do NOT wrap in ```json ```)` เพื่อลดความเสี่ยงที่ AI จะแถม Markdown มาให้
-2. เพิ่มตัวแปร `clean_text` ทำหน้าที่ใช้ไม้กวาดถูคำว่า ` ```json ` ทิ้งให้เกลี้ยงก่อนเข้าสู่ `re.search`
-3. สำคัญสุด: ผมเอาโค้ดชุดนี้ไปวางอยู่ใน `try ... except ... continue` ภายใน **ลูปให้โอกาส (Attempt)** ดังนั้นต่อให้โชคร้าย AI ส่งมาเละเทะ โค้ดจะไม่ Error แดงๆ แบบในรูป แต่จะขึ้นว่า "⚠️ JSON พัง ขอรัน AI อีกรอบ" แล้วมันจะทำงานต่อจนเสร็จครับ!
+                "Output STRICT JSON FORMAT ONLY (Do NOT wrap in
