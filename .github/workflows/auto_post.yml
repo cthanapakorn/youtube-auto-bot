@@ -1,28 +1,37 @@
-name: Auto YouTube Post
+name: Autonomous Viral Shorts Generator
+
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *' # รันอัตโนมัติทุกวันเวลา 09:00 น. (เวลาไทย)
+  workflow_dispatch: # เผื่อกดรันเองด้วยมือ
+
 jobs:
-  build:
+  run-ai-system:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-          
-      - name: Install System FFmpeg
+          python-version: '3.10'
+
+      - name: 📦 Install Requirements
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          
-      - name: Install Python Tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install google-genai requests edge-tts google-api-python-client google-auth Pillow
-          
-      - name: Run Script
-        env: # เพิ่มบรรทัดด้านล่างนี้ครับ
+          pip install google-genai edge-tts requests pillow google-api-python-client google-auth-oauthlib
+          sudo apt-get install -y ffmpeg fontconfig
+
+      - name: 🚀 Run Autonomous System
+        env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python main.py
+
+      - name: 💾 Save Output Assets
+        run: |
+          git config --global user.name "AI-Bot"
+          git config --global user.email "bot@ai.local"
+          git add output/
+          git commit -m "🤖 Auto-saved daily scripts and metadata" || echo "No changes to commit"
+          git push
