@@ -1,4 +1,5 @@
-import os, re, json, subprocess, requests, sys, time, random, shutil, traceback
+import os, re, json, subprocess, requests, sys, time, random, shutil, traceback, asyncio
+import edge_tts
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
 from googleapiclient.discovery import build
@@ -19,11 +20,10 @@ VIDEO_PRIVACY = "private"
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
 def ensure_font_exists():
-    """✅ ปิดตายปัญหาฟอนต์เสีย/หาฟอนต์ไม่เจอ โดยการดึงฟอนต์ Kanit จาก Google โดยตรง"""
+    """✅ ดึงฟอนต์ Kanit จาก Google โดยตรง (การันตีมีฟอนต์ใช้แน่นอน)"""
     font_filename = "font.ttf"
-    # ถ้าไม่มีไฟล์ หรือไฟล์เล็กผิดปกติ (ไฟล์เสีย) ให้โหลดใหม่
     if not os.path.exists(font_filename) or os.path.getsize(font_filename) < 10000:
-        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย (Kanit-Bold) เพื่อแก้ปัญหา FFmpeg หาฟอนต์ไม่เจอ...")
+        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย (Kanit-Bold)...")
         try:
             url = "https://github.com/google/fonts/raw/main/ofl/kanit/Kanit-Bold.ttf"
             r = requests.get(url, allow_redirects=True, timeout=30)
@@ -31,7 +31,7 @@ def ensure_font_exists():
                 f.write(r.content)
             print("✅ ดาวน์โหลดฟอนต์สำเร็จสมบูรณ์!")
         except Exception as e:
-            print(f"⚠️ ดาวน์โหลดฟอนต์ล้มเหลว (จะใช้วิธีเท่าที่มี): {e}")
+            print(f"⚠️ ดาวน์โหลดฟอนต์ล้มเหลว: {e}")
 
 def fetch_image_cartoon(prompt, filename, scene_num):
     print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพสไตล์การ์ตูน...")
@@ -56,6 +56,11 @@ def fetch_image_cartoon(prompt, filename, scene_num):
     print(f"      ‼️ ใช้ภาพกราฟิกสำรองสำหรับฉากที่ {scene_num}")
     Image.new('RGB', (1080, 1920), color=(15, 15, 15)).save(filename, 'JPEG')
     return True
+
+# ⚠️ ฟังก์ชันใหม่: สร้างเสียงพากย์ด้วย Python โดยตรง ไม่ผ่าน Command Line
+async def generate_voice(text, output_file):
+    communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
+    await communicate.save(output_file)
 
 def run_workflow():
     try:
@@ -113,40 +118,35 @@ def run_workflow():
             raise ValueError("สร้างบทไม่สำเร็จใน 5 รอบ AI อาจจะติดขัดการตอบกลับ JSON")
 
         print(f"📌 หัวข้อที่ได้: {data.get('title', 'Viral Finance Shorts')}")
-        print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ (โทนจริงจัง น่าเชื่อถือ)...")
+        
+        print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ ด้วย Python Native API (ปลอดภัย 100%)...")
         full_voice = " . . . ".join([str(s.get('text', '')) for s in data['scenes']])
         
-        # ⚠️ อัปเกรด 1: เรียกใช้ Edge-TTS ผ่าน Python module ตรงๆ ป้องกัน Error คำสั่งหาย
-        tts_cmd = [sys.executable, "-m", "edge_tts", "--rate=-3%", "--voice", "th-TH-NiwatNeural", "--text", full_voice, "--write-media", "v.mp3"]
-        subprocess.run(tts_cmd, check=True, capture_output=True, text=True)
+        # ⚠️ เรียกใช้งาน edge-tts ผ่านคำสั่ง Native Python 
+        asyncio.run(generate_voice(full_voice, "v.mp3"))
+        print("   ✅ สร้างเสียงเสร็จสมบูรณ์!")
 
         print("🖼️ 3. วาดภาพการ์ตูนคุณภาพสูง 6 ฉาก...")
         for i, sc in enumerate(data['scenes']):
             fetch_image_cartoon(sc.get('prompt', ''), f"i_{i}.jpg", i+1)
             time.sleep(3)
 
-        print("🎬 4. ประกอบวิดีโอ 60 วินาที (แก้บั๊ก FFmpeg ด้วยระบบ Array)...")
-        
+        print("🎬 4. ประกอบวิดีโอ 60 วินาที...")
         with open("l.txt", "w", encoding="utf-8") as f:
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
-        # การันตีว่ามีไฟล์ฟอนต์แน่นอน
         ensure_font_exists()
 
-        # ⚠️ อัปเกรด 2: ปรับ Path ฟอนต์ให้เป็นมิตรกับ FFmpeg ขั้นสุด
         drawtext_filters = []
         font_opt = ""
         if os.path.exists("font.ttf"):
-            # แปลงเป็น Absolute Path -> เปลี่ยน \ เป็น / -> ป้องกัน : ด้วย \:
             abs_font_path = os.path.abspath("font.ttf").replace('\\', '/').replace(':', r'\:')
             font_opt = f"fontfile={abs_font_path}:"
         
         for i in range(SCENE_COUNT):
             start_time = i * SCENE_DURATION
             end_time = start_time + 3  
-            
-            # ล้างเครื่องหมายแปลกปลอมที่อาจทำให้ FFmpeg รวน
             caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").replace("\\", "").strip()
             if not caption: continue
             
@@ -159,7 +159,6 @@ def run_workflow():
         if drawtexts_str:
             vf_string += f",{drawtexts_str}"
 
-        # ⚠️ อัปเกรด 3: สร้างคำสั่งแบบ Array List ปิดตายปัญหา Windows shell แย่งเครื่องหมาย ' '
         cmd = [
             "ffmpeg", "-y", 
             "-f", "concat", "-safe", "0", "-i", "l.txt", 
@@ -180,7 +179,7 @@ def run_workflow():
             "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", "60", "final.mp4"
         ])
         
-        # รัน FFmpeg แบบไร้บั๊ก
+        print("   ✅ กำลังรัน FFmpeg...")
         subprocess.run(cmd, check=True, capture_output=True, text=True)
 
         print(f"🚀 5. อัปโหลดสู่ YouTube พร้อม SEO...")
@@ -218,7 +217,7 @@ def run_workflow():
 
     except subprocess.CalledProcessError as e:
         print("\n" + "="*50)
-        print("‼️ ขัดข้องที่โปรแกรมภายนอก (FFmpeg หรือ Edge-TTS พัง)")
+        print("‼️ ขัดข้องที่โปรแกรมภายนอก (FFmpeg)")
         print(f"💥 คำสั่งที่พัง: {' '.join(e.cmd)}")
         print(f"🔍 [รายละเอียด Error จากระบบ]:\n{e.stderr}")
         print("="*50 + "\n")
