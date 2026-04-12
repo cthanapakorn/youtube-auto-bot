@@ -139,7 +139,7 @@ def run_workflow():
 
         print(f"📌 หัวข้อที่ได้: {data.get('title', 'Viral Finance Shorts')}")
         
-        # ⚠️ แก้บั๊ก GitHub พัง: สร้างโฟลเดอร์ output/ และเซฟไฟล์ เพื่อให้ GitHub เอาไป commit ได้
+        # ⚠️ สร้างโฟลเดอร์ output เพื่อเซฟไฟล์
         print("💾 กำลังบันทึกข้อมูลสคริปต์ลงโฟลเดอร์ output/ ...")
         os.makedirs("output", exist_ok=True)
         with open("output/metadata.txt", "w", encoding="utf-8") as f:
