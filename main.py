@@ -1,7 +1,7 @@
+```python
 import sys, subprocess, os
 
 # --- 🛠️ 1. ระบบซ่อมแซมตัวเอง: ติดตั้ง Library ที่หายไปอัตโนมัติ ---
-# ปิดตายปัญหา ModuleNotFoundError (เช่น ไม่มี edge-tts)
 def auto_install_requirements():
     packages = {
         "google.genai": "google-genai",
@@ -20,7 +20,7 @@ def auto_install_requirements():
 
 auto_install_requirements()
 
-# --- 🛠️ 2. Import Libraries ตามปกติ ---
+# --- 🛠️ 2. Import Libraries ---
 import re, json, time, random, shutil, traceback, asyncio, urllib.request
 import edge_tts
 from google import genai
@@ -80,7 +80,6 @@ def fetch_image_cartoon(prompt, filename, scene_num):
     return True
 
 async def generate_voice(text, output_file):
-    """สร้างเสียงพากย์ด้วย API ตรงๆ ป้องกัน Error คำสั่งหายบน Windows"""
     communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
     await communicate.save(output_file)
 
@@ -88,12 +87,11 @@ def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret บน GitHub หรือ Environment Variable")
+            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret บน GitHub")
             
         client = genai.Client(api_key=api_key.strip())
         
         print("🧠 1. Gemini กำลังคิดหัวข้อการเงินระดับไวรัล และเขียนบท...")
-        
         data = None
         for attempt in range(5): 
             print(f"🧠 [Attempt {attempt+1}] AI กำลังสุ่มหัวข้อและร่างบท...")
@@ -141,10 +139,21 @@ def run_workflow():
 
         print(f"📌 หัวข้อที่ได้: {data.get('title', 'Viral Finance Shorts')}")
         
+        # ⚠️ แก้บั๊ก GitHub พัง: สร้างโฟลเดอร์ output/ และเซฟไฟล์ เพื่อให้ GitHub เอาไป commit ได้
+        print("💾 กำลังบันทึกข้อมูลสคริปต์ลงโฟลเดอร์ output/ ...")
+        os.makedirs("output", exist_ok=True)
+        with open("output/metadata.txt", "w", encoding="utf-8") as f:
+            f.write(f"Title: {data.get('title', '')}\n")
+            f.write(f"Description: {data.get('desc', '')}\n")
+            f.write(f"Tags: {data.get('tags', '')}\n")
+        
+        with open("output/script.txt", "w", encoding="utf-8") as f:
+            for i, sc in enumerate(data.get('scenes', [])):
+                f.write(f"Scene {i+1}: {sc.get('text', '')}\n")
+        
         print("🎙️ 2. สร้างเสียงพากย์คุณนิวัฒน์ ด้วย Python Native API...")
         full_voice = " . . . ".join([str(s.get('text', '')) for s in data['scenes']])
         
-        # รันสร้างเสียงอย่างปลอดภัย
         asyncio.run(generate_voice(full_voice, "v.mp3"))
         print("   ✅ สร้างเสียงเสร็จสมบูรณ์!")
 
@@ -158,21 +167,17 @@ def run_workflow():
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
-        # การันตีโหลดฟอนต์ 100%
         ensure_font_exists()
 
-        # ⚠️ จัดรูปแบบ Path ฟอนต์ระดับพระกาฬให้ FFmpeg บน Windows ไม่งอแง
         drawtext_filters = []
         font_opt = ""
         if os.path.exists("font.ttf"):
-            # แปลง Path ให้เป็น Forward Slash ทั้งหมด (FFmpeg ชอบแบบนี้)
             abs_font_path = os.path.abspath("font.ttf").replace('\\', '/')
             font_opt = f"fontfile='{abs_font_path}':"
         
         for i in range(SCENE_COUNT):
             start_time = i * SCENE_DURATION
             end_time = start_time + 3  
-            # ล้างอักขระขยะที่อาจทำให้ FFmpeg รวน
             caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").replace("\\", "").strip()
             if not caption: continue
             
@@ -258,3 +263,6 @@ def run_workflow():
 
 if __name__ == "__main__":
     run_workflow()
+
+
+```
