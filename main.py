@@ -50,7 +50,7 @@ VIDEO_PRIVACY = "private"
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
 def ensure_font_exists():
-    """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันไฟล์เสีย"""
+    """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันไฟล์เสียหรือหน้าเว็บขยะ"""
     font_filename = "font.ttf"
     if os.path.exists(font_filename) and os.path.getsize(font_filename) < 40000:
         os.remove(font_filename)
