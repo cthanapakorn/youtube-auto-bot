@@ -37,6 +37,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image
 
+# ตั้งค่าการอ่านภาษาไทยให้รองรับทุกระบบ
 if sys.stdout.encoding.lower() != 'utf-8':
     try: sys.stdout.reconfigure(encoding='utf-8')
     except: pass
@@ -50,7 +51,7 @@ VIDEO_PRIVACY = "private"
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
 def ensure_font_exists():
-    """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันไฟล์เสียหรือหน้าเว็บขยะ"""
+    """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันไฟล์ขยะหรือหน้าเว็บ 404"""
     font_filename = "font.ttf"
     if os.path.exists(font_filename) and os.path.getsize(font_filename) < 40000:
         os.remove(font_filename)
@@ -113,7 +114,7 @@ def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("ไม่พบ GEMINI_API_KEY")
+            raise ValueError("ไม่พบ GEMINI_API_KEY กรุณาตรวจสอบการตั้งค่า Secret")
             
         client = genai.Client(api_key=api_key.strip())
         
@@ -124,6 +125,7 @@ def run_workflow():
             prompt_sys = (
                 "คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล\n"
                 "เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อการเงิน/ลงทุน สุ่มหัวข้อใหม่ทุกครั้ง\n"
+                "กฎเหล็ก: บทไทยสั้นๆ 40-50 คำต่อฉาก เพื่อให้พูดจบใน 10 วินาที\n"
                 "Output STRICT JSON FORMAT ONLY:\n"
                 "{\n  \"viral_score\": 9,\n  \"title\": \"...\",\n  \"desc\": \"...\",\n  \"tags\": \"...\",\n  \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\", \"caption\": \"...\"}]\n}"
             )
@@ -207,7 +209,7 @@ def run_workflow():
             ).execute()
             print("✨ ภารกิจสำเร็จ 100%!")
         else:
-            print("⚠️ สร้างคลิป final.mp4 เสร็จแล้ว (แต่ไม่พบ Token อัปโหลด)")
+            print("⚠️ สร้างคลิป final.mp4 เสร็จแล้ว (แต่ไม่พบ Token สำหรับอัปโหลด)")
 
     except Exception as e:
         print(f"\n‼️ ขัดข้อง: {str(e)}")
