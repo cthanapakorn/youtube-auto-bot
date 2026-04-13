@@ -1,4 +1,6 @@
-import sys, subprocess, os
+import sys
+import subprocess
+import os
 
 # --- 🛠️ 1. ระบบซ่อมแซมตัวเอง: ติดตั้ง Library ---
 def auto_install_requirements():
@@ -20,7 +22,13 @@ def auto_install_requirements():
 auto_install_requirements()
 
 # --- 🛠️ 2. Import Libraries ---
-import re, json, time, random, shutil, traceback, asyncio
+import re
+import json
+import time
+import random
+import shutil
+import traceback
+import asyncio
 import requests
 import edge_tts
 from google import genai
@@ -265,7 +273,8 @@ def run_workflow():
                 ).execute()
                 print("✨ ภารกิจสำเร็จ 100%! อัปโหลดขึ้น YouTube เรียบร้อยแล้ว!")
             except Exception as e:
-                print(f"‼️ อัปโหลด YouTube พัง: {e}")
+                print(f"‼️ อัปโหลด YouTube พัง (อาจจะติด Quota): {e}")
+                print("✨ แต่วิดีโอ final.mp4 สร้างเสร็จสมบูรณ์แล้ว คุณสามารถดาวน์โหลดจาก GitHub ไปอัปโหลดเองได้!")
         else:
             print("⚠️ ไม่พบ Token สำหรับ YouTube -> สร้างคลิป final.mp4 เสร็จสมบูรณ์แล้ว!")
 
