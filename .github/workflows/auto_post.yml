@@ -2,8 +2,8 @@ name: Autonomous Viral Shorts Generator
 
 on:
   schedule:
-    - cron: '0 2 * * *' # รันอัตโนมัติทุกวันเวลา 09:00 น. (เวลาไทย)
-  workflow_dispatch: # <--- บรรทัดนี้แหละครับที่เสกปุ่ม "Run workflow" ให้กลับมา!
+    - cron: '0 2 * * *' 
+  workflow_dispatch: 
 
 jobs:
   run-ai-system:
@@ -18,10 +18,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 📦 Install System Requirements
+      - name: 📦 Install System & Python Packages
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg fontconfig
+          pip install google-genai edge-tts requests pillow google-api-python-client google-auth-oauthlib
 
       - name: 🚀 Run Autonomous System
         env:
