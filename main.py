@@ -1,6 +1,6 @@
 import sys, subprocess, os
 
-# --- 🛠️ 1. ระบบซ่อมแซมตัวเอง: ติดตั้ง Library ที่หายไปอัตโนมัติ ---
+# --- 🛠️ 1. ระบบซ่อมแซมตัวเอง: ติดตั้ง Library ---
 def auto_install_requirements():
     packages = {
         "google.genai": "google-genai",
@@ -14,13 +14,14 @@ def auto_install_requirements():
         try:
             __import__(module_name)
         except ImportError:
-            print(f"📦 ระบบกำลังติดตั้ง '{pip_name}' ที่ขาดหายไปอัตโนมัติ...")
+            print(f"📦 ระบบกำลังติดตั้ง '{pip_name}'...")
             subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name, "--quiet"])
 
 auto_install_requirements()
 
 # --- 🛠️ 2. Import Libraries ---
-import re, json, time, random, shutil, traceback, asyncio, urllib.request
+import re, json, time, random, shutil, traceback, asyncio
+import requests
 import edge_tts
 from google import genai
 from google.oauth2.credentials import Credentials as YoutubeCredentials
@@ -28,7 +29,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image
 
-# --- 🛠️ 3. แก้ปัญหา Windows Terminal อ่านภาษาไทยไม่ได้ ---
 if sys.stdout.encoding.lower() != 'utf-8':
     try: sys.stdout.reconfigure(encoding='utf-8')
     except: pass
@@ -36,28 +36,45 @@ if sys.stderr.encoding.lower() != 'utf-8':
     try: sys.stderr.reconfigure(encoding='utf-8')
     except: pass
 
-# --- ⚙️ ตั้งค่าความยาว (6 ฉาก x 10 วินาที = 60 วินาทีพอดี) ---
 SCENE_COUNT = 6   
 SCENE_DURATION = 10 
 VIDEO_PRIVACY = "private"
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
 
 def ensure_font_exists():
-    """✅ ดึงฟอนต์ Kanit แบบฝังแกนกลาง ปิดตายปัญหา FFmpeg หาฟอนต์ไม่เจอ"""
+    """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันการโหลดไฟล์ขยะ/หน้าเว็บ 404"""
     font_filename = "font.ttf"
-    if not os.path.exists(font_filename) or os.path.getsize(font_filename) < 10000:
-        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย (Kanit-Bold) เพื่อใช้ฝังซับไตเติล...")
-        try:
-            url = "https://github.com/google/fonts/raw/main/ofl/kanit/Kanit-Bold.ttf"
-            urllib.request.urlretrieve(url, font_filename)
-            print("✅ ดาวน์โหลดฟอนต์สำเร็จสมบูรณ์!")
-        except Exception as e:
-            print(f"⚠️ ดาวน์โหลดฟอนต์ล้มเหลว: {e}")
+    
+    # ถ้ามีไฟล์อยู่แต่ขนาดเล็กกว่า 40KB แปลว่าเป็นไฟล์หน้าเว็บ Error ให้ลบทิ้งทันที
+    if os.path.exists(font_filename) and os.path.getsize(font_filename) < 40000:
+        os.remove(font_filename)
+        print("🗑️ ตรวจพบไฟล์ฟอนต์ขยะ ทำการลบทิ้งเพื่อโหลดใหม่...")
+        
+    if not os.path.exists(font_filename):
+        print("⏳ กำลังดาวน์โหลดฟอนต์ไทย...")
+        # ลิงก์สำรอง 3 ชั้น ป้องกัน GitHub ล่ม
+        urls = [
+            "https://raw.githubusercontent.com/google/fonts/main/ofl/kanit/Kanit-Bold.ttf",
+            "https://raw.githubusercontent.com/google/fonts/main/ofl/prompt/Prompt-Bold.ttf",
+            "https://raw.githubusercontent.com/google/fonts/main/ofl/sarabun/Sarabun-Bold.ttf"
+        ]
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        for url in urls:
+            try:
+                r = requests.get(url, headers=headers, timeout=15)
+                # ต้องตอบกลับ 200 OK และขนาดไฟล์ต้องใหญ่พอที่จะเป็นฟอนต์จริง
+                if r.status_code == 200 and len(r.content) > 40000:
+                    with open(font_filename, 'wb') as f:
+                        f.write(r.content)
+                    print(f"✅ ดาวน์โหลดฟอนต์ของจริงสำเร็จสมบูรณ์!")
+                    return
+            except:
+                continue
+        print("⚠️ โหลดฟอนต์ไม่สำเร็จ ซับไตเติลอาจแสดงผลผิดปกติ")
 
 def fetch_image_cartoon(prompt, filename, scene_num):
     print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพสไตล์การ์ตูน...")
     clean_p = re.sub(r'[^\w\s]', '', str(prompt)).strip().replace(' ', '%20')
-    
     style = "high-quality anime style, stunning visual, dramatic lighting, detailed background, perfect hands, detailed eyes, masterpiece"
     url = f"https://image.pollinations.ai/prompt/{clean_p},{CHAR_ANCHOR},{style}?width=1080&height=1920&seed={random.randint(1,999999)}&nologo=true&model=flux"
     
@@ -70,37 +87,33 @@ def fetch_image_cartoon(prompt, filename, scene_num):
                 print(f"      ✅ ฉากที่ {scene_num} วาดเสร็จสิ้น!")
                 return True
             time.sleep(10)
-        except Exception as e:
-            print(f"      🔄 กำลังลองใหม่... ({e})")
+        except:
             time.sleep(10)
-            
-    print(f"      ‼️ ใช้ภาพกราฟิกสำรองสำหรับฉากที่ {scene_num}")
+    
     Image.new('RGB', (1080, 1920), color=(15, 15, 15)).save(filename, 'JPEG')
     return True
 
-# ⚠️ อัปเกรดจุดที่ทำให้คุณ Error: ใส่ระบบพยายามใหม่เมื่อเน็ต GitHub หลุด (Timeout)
 async def generate_voice(text, output_file):
-    max_retries = 5  # ให้โอกาสลองใหม่ 5 รอบถ้าเซิร์ฟเวอร์เสียงล่ม
+    max_retries = 5 
     for attempt in range(max_retries):
         try:
             print(f"   🎙️ กำลังเชื่อมต่อเซิร์ฟเวอร์เสียง (รอบที่ {attempt + 1}/{max_retries})...")
             communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
             await communicate.save(output_file)
-            return  # ถ้าเสร็จแล้วให้ออกลูปทันที
+            return  
         except Exception as e:
-            print(f"   ⚠️ เซิร์ฟเวอร์เสียงไม่ตอบสนอง (Timeout): {str(e)}")
             if attempt < max_retries - 1:
-                wait_time = (attempt + 1) * 5  # รอ 5วิ, 10วิ, 15วิ ค่อยต่อใหม่
-                print(f"   🔄 รอ {wait_time} วินาทีแล้วลองเชื่อมต่อใหม่...")
+                wait_time = (attempt + 1) * 5  
+                print(f"   🔄 เซิร์ฟเวอร์เสียงไม่ตอบสนอง รอ {wait_time} วิแล้วลองใหม่...")
                 await asyncio.sleep(wait_time)
             else:
-                raise Exception("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เสียงของ Microsoft ได้จริงๆ กรุณาลองใหม่ภายหลัง")
+                raise Exception("เซิร์ฟเวอร์เสียงของ Microsoft ขัดข้อง กรุณาลองใหม่ภายหลัง")
 
 def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret บน GitHub")
+            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret")
             
         client = genai.Client(api_key=api_key.strip())
         
@@ -136,15 +149,12 @@ def run_workflow():
                 
             try:
                 temp_data = json.loads(match.group())
-            except Exception as e:
+            except:
                 continue
 
             score = temp_data.get('viral_score', 0)
-            print(f"   📊 Viral Score ที่ได้: {score}/10")
-            
             if score >= 8 and len(temp_data.get('scenes', [])) == SCENE_COUNT:
                 data = temp_data
-                print("   ✅ คุณภาพผ่านเกณฑ์! นำไปผลิตต่อได้")
                 break
 
         if not data:
@@ -179,18 +189,20 @@ def run_workflow():
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
+        # ⚠️ เรียกใช้งานระบบคัดกรองฟอนต์
         ensure_font_exists()
 
         drawtext_filters = []
         font_opt = ""
-        if os.path.exists("font.ttf"):
-            abs_font_path = os.path.abspath("font.ttf").replace('\\', '/')
+        # ถ้าโหลดฟอนต์สำเร็จ ถึงจะฝังฟอนต์ลงไป ป้องกัน Error ขาดไฟล์
+        if os.path.exists("font.ttf") and os.path.getsize("font.ttf") > 40000:
+            abs_font_path = os.path.abspath("font.ttf").replace('\\', '/').replace(':', r'\:')
             font_opt = f"fontfile='{abs_font_path}':"
         
         for i in range(SCENE_COUNT):
             start_time = i * SCENE_DURATION
             end_time = start_time + 3  
-            caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").replace("\\", "").strip()
+            caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").replace("%", "").replace("\\", "").strip()
             if not caption: continue
             
             dt = f"drawtext={font_opt}text='{caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=160:x=(w-text_w)/2:y=(h-text_h)/2+350:enable='between(t,{start_time},{end_time})'"
@@ -230,14 +242,14 @@ def run_workflow():
         if "YOUTUBE_CREDENTIALS" in os.environ and os.environ["YOUTUBE_CREDENTIALS"].strip():
             try:
                 creds_data = json.loads(os.environ["YOUTUBE_CREDENTIALS"])
-            except Exception as e:
-                print(f"   ⚠️ อ่าน YOUTUBE_CREDENTIALS ไม่สำเร็จ: {e}")
+            except:
+                pass
         elif os.path.exists('token.json'):
             try:
                 with open('token.json', 'r', encoding='utf-8') as f:
                     creds_data = json.load(f)
-            except Exception as e:
-                print(f"   ⚠️ อ่านไฟล์ token.json ไม่สำเร็จ: {e}")
+            except:
+                pass
 
         if creds_data:
             try:
@@ -254,7 +266,6 @@ def run_workflow():
                 print("✨ ภารกิจสำเร็จ 100%! อัปโหลดขึ้น YouTube เรียบร้อยแล้ว!")
             except Exception as e:
                 print(f"‼️ อัปโหลด YouTube พัง: {e}")
-                print("✨ แต่วิดีโอ final.mp4 สร้างเสร็จสมบูรณ์แล้ว สามารถนำไปใช้อัปโหลดเองได้!")
         else:
             print("⚠️ ไม่พบ Token สำหรับ YouTube -> สร้างคลิป final.mp4 เสร็จสมบูรณ์แล้ว!")
 
@@ -268,7 +279,6 @@ def run_workflow():
     except Exception as e:
         print("\n" + "="*50)
         print(f"‼️ ขัดข้องที่ระบบ Python: {str(e)}")
-        print("🔍 [ตรวจสอบจุดที่พังแบบเจาะลึกด้านล่าง]:")
         traceback.print_exc()
         print("="*50 + "\n")
         sys.exit(1)
