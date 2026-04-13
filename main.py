@@ -53,14 +53,12 @@ def ensure_font_exists():
     """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันการโหลดไฟล์ขยะ/หน้าเว็บ 404"""
     font_filename = "font.ttf"
     
-    # ถ้ามีไฟล์อยู่แต่ขนาดเล็กกว่า 40KB แปลว่าเป็นไฟล์หน้าเว็บ Error ให้ลบทิ้งทันที
     if os.path.exists(font_filename) and os.path.getsize(font_filename) < 40000:
         os.remove(font_filename)
         print("🗑️ ตรวจพบไฟล์ฟอนต์ขยะ ทำการลบทิ้งเพื่อโหลดใหม่...")
         
     if not os.path.exists(font_filename):
         print("⏳ กำลังดาวน์โหลดฟอนต์ไทย...")
-        # ลิงก์สำรอง 3 ชั้น ป้องกัน GitHub ล่ม
         urls = [
             "https://raw.githubusercontent.com/google/fonts/main/ofl/kanit/Kanit-Bold.ttf",
             "https://raw.githubusercontent.com/google/fonts/main/ofl/prompt/Prompt-Bold.ttf",
@@ -70,13 +68,12 @@ def ensure_font_exists():
         for url in urls:
             try:
                 r = requests.get(url, headers=headers, timeout=15)
-                # ต้องตอบกลับ 200 OK และขนาดไฟล์ต้องใหญ่พอที่จะเป็นฟอนต์จริง
                 if r.status_code == 200 and len(r.content) > 40000:
                     with open(font_filename, 'wb') as f:
                         f.write(r.content)
                     print(f"✅ ดาวน์โหลดฟอนต์ของจริงสำเร็จสมบูรณ์!")
                     return
-            except:
+            except Exception:
                 continue
         print("⚠️ โหลดฟอนต์ไม่สำเร็จ ซับไตเติลอาจแสดงผลผิดปกติ")
 
@@ -91,11 +88,12 @@ def fetch_image_cartoon(prompt, filename, scene_num):
         try:
             r = requests.get(url, headers=headers, timeout=120)
             if r.status_code == 200 and len(r.content) > 20000:
-                with open(filename, 'wb') as f: f.write(r.content)
+                with open(filename, 'wb') as f:
+                    f.write(r.content)
                 print(f"      ✅ ฉากที่ {scene_num} วาดเสร็จสิ้น!")
                 return True
             time.sleep(10)
-        except:
+        except Exception:
             time.sleep(10)
     
     Image.new('RGB', (1080, 1920), color=(15, 15, 15)).save(filename, 'JPEG')
@@ -157,7 +155,7 @@ def run_workflow():
                 
             try:
                 temp_data = json.loads(match.group())
-            except:
+            except Exception:
                 continue
 
             score = temp_data.get('viral_score', 0)
@@ -197,12 +195,10 @@ def run_workflow():
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration 10\n")
             f.write(f"file 'i_5.jpg'")
 
-        # ⚠️ เรียกใช้งานระบบคัดกรองฟอนต์
         ensure_font_exists()
 
         drawtext_filters = []
         font_opt = ""
-        # ถ้าโหลดฟอนต์สำเร็จ ถึงจะฝังฟอนต์ลงไป ป้องกัน Error ขาดไฟล์
         if os.path.exists("font.ttf") and os.path.getsize("font.ttf") > 40000:
             abs_font_path = os.path.abspath("font.ttf").replace('\\', '/').replace(':', r'\:')
             font_opt = f"fontfile='{abs_font_path}':"
@@ -247,50 +243,4 @@ def run_workflow():
 
         print(f"🚀 5. อัปโหลดสู่ YouTube พร้อม SEO...")
         creds_data = None
-        if "YOUTUBE_CREDENTIALS" in os.environ and os.environ["YOUTUBE_CREDENTIALS"].strip():
-            try:
-                creds_data = json.loads(os.environ["YOUTUBE_CREDENTIALS"])
-            except:
-                pass
-        elif os.path.exists('token.json'):
-            try:
-                with open('token.json', 'r', encoding='utf-8') as f:
-                    creds_data = json.load(f)
-            except:
-                pass
-
-        if creds_data:
-            try:
-                creds = YoutubeCredentials.from_authorized_user_info(creds_data)
-                youtube = build("youtube", "v3", credentials=creds)
-                youtube.videos().insert(
-                    part="snippet,status",
-                    body={
-                        "snippet": {"title": data['title'], "description": f"{data['desc']}\n\n{data['tags']}", "categoryId": "27"}, 
-                        "status": {"privacyStatus": VIDEO_PRIVACY}
-                    },
-                    media_body=MediaFileUpload("final.mp4")
-                ).execute()
-                print("✨ ภารกิจสำเร็จ 100%! อัปโหลดขึ้น YouTube เรียบร้อยแล้ว!")
-            except Exception as e:
-                print(f"‼️ อัปโหลด YouTube พัง (อาจจะติด Quota): {e}")
-                print("✨ แต่วิดีโอ final.mp4 สร้างเสร็จสมบูรณ์แล้ว คุณสามารถดาวน์โหลดจาก GitHub ไปอัปโหลดเองได้!")
-        else:
-            print("⚠️ ไม่พบ Token สำหรับ YouTube -> สร้างคลิป final.mp4 เสร็จสมบูรณ์แล้ว!")
-
-    except subprocess.CalledProcessError as e:
-        print("\n" + "="*50)
-        print("‼️ ขัดข้องที่โปรแกรมภายนอก (FFmpeg)")
-        print(f"💥 คำสั่งที่พัง: {' '.join(e.cmd)}")
-        print(f"🔍 [รายละเอียด Error จากระบบ]:\n{e.stderr}")
-        print("="*50 + "\n")
-        sys.exit(1)
-    except Exception as e:
-        print("\n" + "="*50)
-        print(f"‼️ ขัดข้องที่ระบบ Python: {str(e)}")
-        traceback.print_exc()
-        print("="*50 + "\n")
-        sys.exit(1)
-
-if __name__ == "__main__":
-    run_workflow()
+        if "YOUTUBE_CREDENTIALS" in
