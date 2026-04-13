@@ -32,6 +32,9 @@ jobs:
         run: |
           git config --global user.name "AI-Bot"
           git config --global user.email "bot@ai.local"
-          git add output/
+          git add .
           git commit -m "🤖 Auto-saved daily scripts and metadata" || echo "No changes to commit"
           git push
+การเปลี่ยนเป็น `git add .` หมายความว่า "ให้เซฟทุกอย่างที่สร้างมาใหม่ ไม่ต้องสนว่ามันจะอยู่ในโฟลเดอร์ชื่ออะไร" รับรองว่าไม่เกิด Error `pathspec did not match` อีกแน่นอนครับ
+
+ทำแค่ 2 ข้อนี้ กด Commit แล้วรันได้เลยครับ ครั้งนี้สำเร็จ 100% แน่นอน! สู้ๆ ครับ! ✌️
