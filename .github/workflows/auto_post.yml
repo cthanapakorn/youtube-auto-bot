@@ -2,8 +2,8 @@ name: Autonomous Viral Shorts Generator
 
 on:
   schedule:
-    - cron: '0 2 * * *' 
-  workflow_dispatch: 
+    - cron: '0 2 * * *' # รันอัตโนมัติทุกวันเวลา 09:00 น. (เวลาไทย)
+  workflow_dispatch: # 🪄 คำสั่งเสกปุ่ม "Run workflow" ให้คุณกดรันเองได้
 
 jobs:
   run-ai-system:
@@ -36,4 +36,5 @@ jobs:
           git config --global user.email "bot@ai.local"
           git add .
           git commit -m "🤖 Auto-saved daily scripts and metadata" || echo "No changes to commit"
+          git pull --rebase origin main
           git push
