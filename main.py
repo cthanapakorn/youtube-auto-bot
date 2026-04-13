@@ -78,9 +78,23 @@ def fetch_image_cartoon(prompt, filename, scene_num):
     Image.new('RGB', (1080, 1920), color=(15, 15, 15)).save(filename, 'JPEG')
     return True
 
+# ⚠️ อัปเกรดจุดที่ทำให้คุณ Error: ใส่ระบบพยายามใหม่เมื่อเน็ต GitHub หลุด (Timeout)
 async def generate_voice(text, output_file):
-    communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
-    await communicate.save(output_file)
+    max_retries = 5  # ให้โอกาสลองใหม่ 5 รอบถ้าเซิร์ฟเวอร์เสียงล่ม
+    for attempt in range(max_retries):
+        try:
+            print(f"   🎙️ กำลังเชื่อมต่อเซิร์ฟเวอร์เสียง (รอบที่ {attempt + 1}/{max_retries})...")
+            communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
+            await communicate.save(output_file)
+            return  # ถ้าเสร็จแล้วให้ออกลูปทันที
+        except Exception as e:
+            print(f"   ⚠️ เซิร์ฟเวอร์เสียงไม่ตอบสนอง (Timeout): {str(e)}")
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 5  # รอ 5วิ, 10วิ, 15วิ ค่อยต่อใหม่
+                print(f"   🔄 รอ {wait_time} วินาทีแล้วลองเชื่อมต่อใหม่...")
+                await asyncio.sleep(wait_time)
+            else:
+                raise Exception("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เสียงของ Microsoft ได้จริงๆ กรุณาลองใหม่ภายหลัง")
 
 def run_workflow():
     try:
@@ -138,7 +152,6 @@ def run_workflow():
 
         print(f"📌 หัวข้อที่ได้: {data.get('title', 'Viral Finance Shorts')}")
         
-        # ⚠️ สร้างโฟลเดอร์ output เพื่อเซฟไฟล์
         print("💾 กำลังบันทึกข้อมูลสคริปต์ลงโฟลเดอร์ output/ ...")
         os.makedirs("output", exist_ok=True)
         with open("output/metadata.txt", "w", encoding="utf-8") as f:
