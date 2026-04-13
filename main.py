@@ -1,4 +1,3 @@
-```python
 import sys, subprocess, os
 
 # --- 🛠️ 1. ระบบซ่อมแซมตัวเอง: ติดตั้ง Library ที่หายไปอัตโนมัติ ---
@@ -87,7 +86,7 @@ def run_workflow():
     try:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret บน GitHub")
+            raise ValueError("ไม่พบ GEMINI_API_KEY ในระบบ กรุณาตรวจสอบการตั้งค่า Secret")
             
         client = genai.Client(api_key=api_key.strip())
         
@@ -263,6 +262,3 @@ def run_workflow():
 
 if __name__ == "__main__":
     run_workflow()
-
-
-```
