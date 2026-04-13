@@ -3,7 +3,7 @@ name: Autonomous Viral Shorts Generator
 on:
   schedule:
     - cron: '0 2 * * *' # รันอัตโนมัติทุกวันเวลา 09:00 น. (เวลาไทย)
-  workflow_dispatch: # เผื่อกดรันเองด้วยมือ
+  workflow_dispatch: # <--- บรรทัดนี้แหละครับที่เสกปุ่ม "Run workflow" ให้กลับมา!
 
 jobs:
   run-ai-system:
@@ -18,14 +18,15 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 📦 Install Requirements
+      - name: 📦 Install System Requirements
         run: |
-          pip install google-genai edge-tts requests pillow google-api-python-client google-auth-oauthlib
+          sudo apt-get update
           sudo apt-get install -y ffmpeg fontconfig
 
       - name: 🚀 Run Autonomous System
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_CREDENTIALS: ${{ secrets.YOUTUBE_CREDENTIALS }}
         run: python main.py
 
       - name: 💾 Save Output Assets
@@ -35,6 +36,3 @@ jobs:
           git add .
           git commit -m "🤖 Auto-saved daily scripts and metadata" || echo "No changes to commit"
           git push
-การเปลี่ยนเป็น `git add .` หมายความว่า "ให้เซฟทุกอย่างที่สร้างมาใหม่ ไม่ต้องสนว่ามันจะอยู่ในโฟลเดอร์ชื่ออะไร" รับรองว่าไม่เกิด Error `pathspec did not match` อีกแน่นอนครับ
-
-ทำแค่ 2 ข้อนี้ กด Commit แล้วรันได้เลยครับ ครั้งนี้สำเร็จ 100% แน่นอน! สู้ๆ ครับ! ✌️
