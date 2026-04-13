@@ -38,3 +38,11 @@ jobs:
           git commit -m "🤖 Auto-saved daily scripts and metadata" || echo "No changes to commit"
           git pull --rebase origin main || true
           git push
+
+      # 🪄 เพิ่มส่วนนี้เข้าไป: ให้ GitHub เซฟคลิปเก็บไว้ให้เราโหลดได้ เผื่อ YouTube โควต้าเต็มอีก
+      - name: 📥 Backup Video File
+        uses: actions/upload-artifact@v4
+        if: always() 
+        with:
+          name: Viral-Shorts-Video
+          path: final.mp4
