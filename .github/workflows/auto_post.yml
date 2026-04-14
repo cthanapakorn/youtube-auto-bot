@@ -34,13 +34,13 @@ jobs:
         run: |
           git config --global user.name "AI-Bot"
           git config --global user.email "bot@ai.local"
-          git add output/
-          git commit -m "🤖 Auto-saved daily scripts and metadata" || echo "No changes to commit"
+          git add -A || true
+          git reset -- .github/ || true
+          git commit -m "🤖 Auto-saved daily assets" || echo "No changes to commit"
           git pull --rebase origin main || true
-          git push
+          git push || echo "Push skipped"
 
-      # 🪄 เพิ่มส่วนนี้เข้าไป: ให้ GitHub เซฟคลิปเก็บไว้ให้เราโหลดได้ เผื่อ YouTube โควต้าเต็มอีก
-      - name: 📥 Backup Video File
+      - name: 📥 Backup Video File (ดาวน์โหลดคลิปที่นี่)
         uses: actions/upload-artifact@v4
         if: always() 
         with:
