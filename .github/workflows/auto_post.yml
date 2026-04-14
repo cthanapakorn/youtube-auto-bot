@@ -30,13 +30,20 @@ jobs:
           YOUTUBE_CREDENTIALS: ${{ secrets.YOUTUBE_CREDENTIALS }}
         run: python main.py
 
-      - name: 💾 Save Output Assets
+      - name: 🧹 Organize Files (จัดแฟ้มและเปลี่ยนชื่อคลิป)
+        run: |
+          mkdir -p Ready_Videos
+          # เปลี่ยนชื่อไฟล์ final.mp4 ให้เติมวันที่และเวลาเข้าไปด้วย
+          DATE=$(date +'%Y-%m-%d_%H-%M')
+          mv final.mp4 Ready_Videos/Shorts_$DATE.mp4 || true
+
+      - name: 💾 Save to GitHub (เซฟเฉพาะของที่จำเป็น)
         run: |
           git config --global user.name "AI-Bot"
           git config --global user.email "bot@ai.local"
-          git add -A || true
-          git reset -- .github/ || true
-          git commit -m "🤖 Auto-saved daily assets" || echo "No changes to commit"
+          # สั่งให้เซฟแค่โฟลเดอร์ output (สคริปต์) และ Ready_Videos (คลิป)
+          git add output/ Ready_Videos/
+          git commit -m "🤖 Auto-saved Video and Scripts" || echo "No changes to commit"
           git pull --rebase origin main || true
           git push || echo "Push skipped"
 
@@ -44,5 +51,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always() 
         with:
-          name: Viral-Shorts-Video
-          path: final.mp4
+          name: Viral-Shorts-Videos
+          path: Ready_Videos/
