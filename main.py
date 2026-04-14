@@ -121,28 +121,33 @@ def run_workflow():
         print("🧠 1. คิดหัวข้อและเขียนบท...")
         data = None
         for attempt in range(5): 
-            print(f"🧠 [Attempt {attempt+1}]...")
-            prompt_sys = (
-                "คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล\n"
-                "เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อการเงิน/ลงทุน สุ่มหัวข้อใหม่ทุกครั้ง\n"
-                "กฎเหล็ก: บทไทยสั้นๆ 40-50 คำต่อฉาก เพื่อให้พูดจบใน 10 วินาที\n"
-                "Output STRICT JSON FORMAT ONLY:\n"
-                "{\n  \"viral_score\": 9,\n  \"title\": \"...\",\n  \"desc\": \"...\",\n  \"tags\": \"...\",\n  \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\", \"caption\": \"...\"}]\n}"
-            )
-            response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_sys)
-            raw_text = response.text
-            clean_text = raw_text.replace('```json', '').replace('```', '').strip()
-            match = re.search(r'\{.*\}', clean_text, re.DOTALL)
-            if not match: continue
             try:
+                print(f"🧠 [Attempt {attempt+1}]...")
+                prompt_sys = (
+                    "คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล\n"
+                    "เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อการเงิน/ลงทุน สุ่มหัวข้อใหม่ทุกครั้ง\n"
+                    "กฎเหล็ก: บทไทยสั้นๆ 40-50 คำต่อฉาก เพื่อให้พูดจบใน 10 วินาที\n"
+                    "Output STRICT JSON FORMAT ONLY:\n"
+                    "{\n  \"viral_score\": 9,\n  \"title\": \"...\",\n  \"desc\": \"...\",\n  \"tags\": \"...\",\n  \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\", \"caption\": \"...\"}]\n}"
+                )
+                response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_sys)
+                raw_text = response.text
+                clean_text = raw_text.replace('```json', '').replace('```', '').strip()
+                match = re.search(r'\{.*\}', clean_text, re.DOTALL)
+                if not match: continue
+                
                 temp_data = json.loads(match.group())
-            except: continue
-            if temp_data.get('viral_score', 0) >= 8 and len(temp_data.get('scenes', [])) == SCENE_COUNT:
-                data = temp_data
-                break
+                if temp_data.get('viral_score', 0) >= 8 and len(temp_data.get('scenes', [])) == SCENE_COUNT:
+                    data = temp_data
+                    break
+            except Exception as e:
+                # ⚠️ อัปเกรด: ถ้าเซิร์ฟเวอร์ Gemini ล่ม ให้รอ 15 วินาทีแล้วลองใหม่
+                print(f"   ⚠️ เซิร์ฟเวอร์ Gemini คิวเต็มหรือขัดข้อง (รอ 15 วิแล้วลองใหม่)...")
+                time.sleep(15)
+                continue
 
         if not data:
-            raise ValueError("สร้างบทไม่สำเร็จ")
+            raise ValueError("สร้างบทไม่สำเร็จ เซิร์ฟเวอร์อาจจะทำงานหนักเกินไป")
 
         print(f"📌 หัวข้อ: {data.get('title', 'Viral Finance')}")
         
