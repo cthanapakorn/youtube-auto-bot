@@ -47,8 +47,10 @@ if sys.stderr.encoding.lower() != 'utf-8':
 
 SCENE_COUNT = 6   
 SCENE_DURATION = 10 
-VIDEO_PRIVACY = "private"
-CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed anime style, highly detailed expressive face, perfectly drawn eyes, anatomically correct hands, exactly 5 fingers per hand, flawless human anatomy, vibrant colors, modern webtoon style, masterpiece illustration"
+# ✅ UPGRADE: ซ่อนคลิปไว้ให้เราตรวจก่อน
+VIDEO_PRIVACY = "private" 
+# ✅ UPGRADE: กั้นคอกภาพ เพิ่มคำว่า flawless anatomy, wide angle ให้ AI วาดเป๊ะขึ้น
+CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, wide angle shot, flawless human anatomy, perfectly drawn eyes, exactly 5 fingers per hand, no extra limbs, business casual attire, highly detailed anime webtoon style, vibrant colors, masterpiece illustration"
 
 def ensure_font_exists():
     """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันไฟล์ขยะหรือหน้าเว็บ 404"""
@@ -118,18 +120,40 @@ def run_workflow():
             
         client = genai.Client(api_key=api_key.strip())
         
-        print("🧠 1. คิดหัวข้อและเขียนบท...")
+        # ✅ UPGRADE: ระบบสุ่มหัวข้อ ไม่ให้คลิปซ้ำจำเจ
+        TOPIC_CATEGORIES = [
+            "เรื่องลี้ลับในประวัติศาสตร์การเงิน",
+            "ข้อคิดการใช้ชีวิตจากมหาเศรษฐีระดับโลก",
+            "ทริคจิตวิทยาการเก็บเงินที่คนส่วนใหญ่ไม่รู้",
+            "ความจริงของการลงทุนที่โรงเรียนไม่เคยสอน",
+            "นิสัยเล็กๆ ที่ทำให้คนรวยต่างจากคนทั่วไป"
+        ]
+        random_topic = random.choice(TOPIC_CATEGORIES)
+        
+        print(f"🧠 1. คิดหัวข้อและเขียนบท (หมวดหมู่: {random_topic})...")
         data = None
         for attempt in range(5): 
             try:
                 print(f"🧠 [Attempt {attempt+1}]...")
-                prompt_sys = (
-                    "คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล\n"
-                    "เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อการเงิน/ลงทุน สุ่มหัวข้อใหม่ทุกครั้ง\n"
-                    "กฎเหล็ก: บทไทยสั้นๆ 40-50 คำต่อฉาก เพื่อให้พูดจบใน 10 วินาที\n"
-                    "Output STRICT JSON FORMAT ONLY:\n"
-                    "{\n  \"viral_score\": 9,\n  \"title\": \"...\",\n  \"desc\": \"...\",\n  \"tags\": \"...\",\n  \"scenes\": [{\"text\": \"...\", \"prompt\": \"...\", \"caption\": \"...\"}]\n}"
-                )
+                # ✅ UPGRADE: ปรับ Prompt บังคับความยาว 130 คำ, ห้ามภาพแหว่ง, และบังคับจบสวยๆ
+                prompt_sys = f"""
+                คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล
+                เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อ: {random_topic}
+                กฎเหล็ก:
+                1. ความยาวรวมทั้งหมดทุกฉากต้องไม่เกิน 130 คำ (เพื่อให้พูดจบใน 55 วินาทีเป๊ะๆ) ให้แบ่งเป็น 6 ฉาก ฉากละประมาณ 20-25 คำ
+                2. ภาษาพูดเป็นธรรมชาติ เหมือนเพื่อนเล่าให้ฟัง มีจังหวะเว้นวรรค
+                3. ฉากสุดท้าย ต้องสรุปให้จบสมบูรณ์ ห้ามค้างคา และทิ้งท้ายด้วยคำว่า "ฝากกดติดตามด้วยนะครับ"
+                4. ในส่วนของ 'prompt' วาดภาพ ให้เขียนเป็นภาษาอังกฤษ โดยต้องเพิ่มคำสั่งหลีกเลี่ยงความผิดพลาดเสมอ เช่น "wide angle, no deformed anatomy, symmetrical eyes, perfect hands, no text" 
+
+                Output STRICT JSON FORMAT ONLY:
+                {{
+                  "viral_score": 9,
+                  "title": "...",
+                  "desc": "...",
+                  "tags": "...",
+                  "scenes": [{{"text": "...", "prompt": "...", "caption": "..."}}]
+                }}
+                """
                 response = client.models.generate_content(model='models/gemini-2.5-flash', contents=prompt_sys)
                 raw_text = response.text
                 clean_text = raw_text.replace('```json', '').replace('```', '').strip()
@@ -141,7 +165,6 @@ def run_workflow():
                     data = temp_data
                     break
             except Exception as e:
-                # ⚠️ อัปเกรด: ถ้าเซิร์ฟเวอร์ Gemini ล่ม ให้รอ 15 วินาทีแล้วลองใหม่
                 print(f"   ⚠️ เซิร์ฟเวอร์ Gemini คิวเต็มหรือขัดข้อง (รอ 15 วิแล้วลองใหม่)...")
                 time.sleep(15)
                 continue
@@ -149,7 +172,7 @@ def run_workflow():
         if not data:
             raise ValueError("สร้างบทไม่สำเร็จ เซิร์ฟเวอร์อาจจะทำงานหนักเกินไป")
 
-        print(f"📌 หัวข้อ: {data.get('title', 'Viral Finance')}")
+        print(f"📌 หัวข้อที่ได้: {data.get('title', 'Viral Finance')}")
         
         os.makedirs("output", exist_ok=True)
         with open("output/metadata.txt", "w", encoding="utf-8") as f:
@@ -192,14 +215,15 @@ def run_workflow():
 
         cmd = ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", "l.txt", "-i", "v.mp3"]
         if os.path.exists("bg.mp3"):
-            cmd.extend(["-i", "bg.mp3", "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]", "-map", "0:v", "-map", "[a]"])
+            # ✅ UPGRADE: เพิ่ม -ss 10 เพื่อข้าม 10 วินาทีแรกของเพลงพื้นหลัง (เอาท่อนกลางๆ) และหรี่เสียง
+            cmd.extend(["-ss", "10", "-i", "bg.mp3", "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]", "-map", "0:v", "-map", "[a]"])
         else:
             cmd.extend(["-map", "0:v", "-map", "1:a", "-c:a", "aac"])
         cmd.extend(["-vf", vf_string, "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", "60", "final.mp4"])
         
         subprocess.run(cmd, check=True, capture_output=True, text=True)
 
-        print(f"🚀 5. อัปโหลดสู่ YouTube...")
+        print(f"🚀 5. อัปโหลดสู่ YouTube (แบบตั้งเป็น Private รอตรวจ)...")
         creds_data = None
         if "YOUTUBE_CREDENTIALS" in os.environ and os.environ["YOUTUBE_CREDENTIALS"].strip():
             creds_data = json.loads(os.environ["YOUTUBE_CREDENTIALS"])
@@ -212,7 +236,7 @@ def run_workflow():
                 body={"snippet": {"title": data['title'], "description": f"{data['desc']}\n\n{data['tags']}", "categoryId": "27"}, "status": {"privacyStatus": VIDEO_PRIVACY}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ 100%!")
+            print("✨ ภารกิจสำเร็จ 100%! ไปตรวจคลิปใน YouTube Studio ได้เลยครับ")
         else:
             print("⚠️ สร้างคลิป final.mp4 เสร็จแล้ว (แต่ไม่พบ Token สำหรับอัปโหลด)")
 
