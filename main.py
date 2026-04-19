@@ -46,14 +46,22 @@ if sys.stderr.encoding.lower() != 'utf-8':
     except: pass
 
 SCENE_COUNT = 6   
-SCENE_DURATION = 10 
-# ✅ UPGRADE: ซ่อนคลิปไว้ให้เราตรวจก่อน
 VIDEO_PRIVACY = "private" 
-# ✅ UPGRADE: กั้นคอกภาพ เพิ่มคำว่า flawless anatomy, wide angle ให้ AI วาดเป๊ะขึ้น
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, wide angle shot, flawless human anatomy, perfectly drawn eyes, exactly 5 fingers per hand, no extra limbs, business casual attire, highly detailed anime webtoon style, vibrant colors, masterpiece illustration"
 
+# ✅ UPGRADE: ฟังก์ชันใช้วัดความยาวไฟล์เสียงแบบเป๊ะๆ (เสี้ยววินาที)
+def get_audio_duration(file_path):
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", file_path],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=True
+        )
+        return float(result.stdout.strip())
+    except Exception as e:
+        print(f"⚠️ ไม่สามารถหาความยาวเสียงได้ ใช้ค่าพื้นฐาน 55 วินาทีแทน: {e}")
+        return 55.0
+
 def ensure_font_exists():
-    """✅ ระบบโหลดฟอนต์อัจฉริยะ ป้องกันไฟล์ขยะหรือหน้าเว็บ 404"""
     font_filename = "font.ttf"
     if os.path.exists(font_filename) and os.path.getsize(font_filename) < 40000:
         os.remove(font_filename)
@@ -96,7 +104,6 @@ def fetch_image_cartoon(prompt, filename, scene_num):
     return True
 
 async def generate_voice(text, output_file):
-    """🎙️ ระบบพากย์เสียงพร้อม Retry กัน Timeout"""
     max_retries = 5 
     for attempt in range(max_retries):
         try:
@@ -120,7 +127,6 @@ def run_workflow():
             
         client = genai.Client(api_key=api_key.strip())
         
-        # ✅ UPGRADE: ระบบสุ่มหัวข้อ ไม่ให้คลิปซ้ำจำเจ
         TOPIC_CATEGORIES = [
             "เรื่องลี้ลับในประวัติศาสตร์การเงิน",
             "ข้อคิดการใช้ชีวิตจากมหาเศรษฐีระดับโลก",
@@ -135,7 +141,6 @@ def run_workflow():
         for attempt in range(5): 
             try:
                 print(f"🧠 [Attempt {attempt+1}]...")
-                # ✅ UPGRADE: ปรับ Prompt บังคับความยาว 130 คำ, ห้ามภาพแหว่ง, และบังคับจบสวยๆ
                 prompt_sys = f"""
                 คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล
                 เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อ: {random_topic}
@@ -182,6 +187,11 @@ def run_workflow():
         full_voice = " . . . ".join([str(s.get('text', '')) for s in data['scenes']])
         asyncio.run(generate_voice(full_voice, "v.mp3"))
 
+        # ✅ UPGRADE: วัดความยาวเสียงที่แท้จริง และหารเวลาให้ฉากละเท่าๆ กัน
+        voice_duration = get_audio_duration("v.mp3")
+        scene_duration = voice_duration / SCENE_COUNT
+        print(f"⏱️ ความยาวเสียงทั้งหมด {voice_duration:.2f} วิ -> ตกฉากละ {scene_duration:.2f} วินาที")
+
         print("🖼️ 3. วาดภาพ 6 ฉาก...")
         for i, sc in enumerate(data['scenes']):
             fetch_image_cartoon(sc.get('prompt', ''), f"i_{i}.jpg", i+1)
@@ -190,8 +200,9 @@ def run_workflow():
         print("🎬 4. ประกอบวิดีโอ...")
         with open("l.txt", "w", encoding="utf-8") as f:
             for i in range(SCENE_COUNT):
-                f.write(f"file 'i_{i}.jpg'\nduration 10\n")
-            f.write(f"file 'i_5.jpg'")
+                # ✅ UPGRADE: ใช้เวลาที่หารมาได้เป๊ะๆ แทนค่าคงที่ 10 วิ
+                f.write(f"file 'i_{i}.jpg'\nduration {scene_duration:.2f}\n")
+            f.write(f"file 'i_{SCENE_COUNT-1}.jpg'")
 
         ensure_font_exists()
         drawtext_filters = []
@@ -201,11 +212,11 @@ def run_workflow():
             font_opt = f"fontfile='{abs_font_path}':"
         
         for i in range(SCENE_COUNT):
-            start_time = i * SCENE_DURATION
-            end_time = start_time + 3  
+            start_time = i * scene_duration
+            end_time = start_time + (scene_duration * 0.9)  # ✅ UPGRADE: แสดงซับไตเติ้ลนาน 90% ของความยาวฉาก
             caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").strip()
             if not caption: continue
-            dt = f"drawtext={font_opt}text='{caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=160:x=(w-text_w)/2:y=(h-text_h)/2+350:enable='between(t,{start_time},{end_time})'"
+            dt = f"drawtext={font_opt}text='{caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=160:x=(w-text_w)/2:y=(h-text_h)/2+350:enable='between(t,{start_time:.2f},{end_time:.2f})'"
             drawtext_filters.append(dt)
             
         drawtexts_str = ",".join(drawtext_filters)
@@ -215,15 +226,17 @@ def run_workflow():
 
         cmd = ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", "l.txt", "-i", "v.mp3"]
         if os.path.exists("bg.mp3"):
-            # ✅ UPGRADE: เพิ่ม -ss 10 เพื่อข้าม 10 วินาทีแรกของเพลงพื้นหลัง (เอาท่อนกลางๆ) และหรี่เสียง
-            cmd.extend(["-ss", "10", "-i", "bg.mp3", "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]", "-map", "0:v", "-map", "[a]"])
+            # ✅ UPGRADE: เริ่มเพลงที่ 30 วินาที (-ss 30) เพื่อข้ามท่อน Intro เสียงดนตรี
+            cmd.extend(["-ss", "30", "-i", "bg.mp3", "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.08[a2];[a1][a2]amix=inputs=2:duration=first[a]", "-map", "0:v", "-map", "[a]"])
         else:
             cmd.extend(["-map", "0:v", "-map", "1:a", "-c:a", "aac"])
-        cmd.extend(["-vf", vf_string, "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", "60", "final.mp4"])
+        
+        # ✅ UPGRADE: บังคับตัดวิดีโอให้จบพร้อมเสียงเป๊ะๆ (-t voice_duration)
+        cmd.extend(["-vf", vf_string, "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", f"{voice_duration:.2f}", "final.mp4"])
         
         subprocess.run(cmd, check=True, capture_output=True, text=True)
 
-        print(f"🚀 5. อัปโหลดสู่ YouTube (แบบตั้งเป็น Private รอตรวจ)...")
+        print(f"🚀 5. อัปโหลดสู่ YouTube (ตั้ง Private)...")
         creds_data = None
         if "YOUTUBE_CREDENTIALS" in os.environ and os.environ["YOUTUBE_CREDENTIALS"].strip():
             creds_data = json.loads(os.environ["YOUTUBE_CREDENTIALS"])
@@ -236,7 +249,7 @@ def run_workflow():
                 body={"snippet": {"title": data['title'], "description": f"{data['desc']}\n\n{data['tags']}", "categoryId": "27"}, "status": {"privacyStatus": VIDEO_PRIVACY}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ 100%! ไปตรวจคลิปใน YouTube Studio ได้เลยครับ")
+            print("✨ ภารกิจสำเร็จ 100%! ภาพตรงเสียง เสียงจบภาพตัด เพลงเข้าเป๊ะ!")
         else:
             print("⚠️ สร้างคลิป final.mp4 เสร็จแล้ว (แต่ไม่พบ Token สำหรับอัปโหลด)")
 
