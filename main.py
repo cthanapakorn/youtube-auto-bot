@@ -1,5 +1,4 @@
 import sys
-import subprocess
 import os
 import re
 import json
@@ -15,28 +14,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from PIL import Image
 
-# --- 🛠️ 1. ระบบติดตั้ง Library อัตโนมัติ ---
-def auto_install():
-    pkgs = {
-        "google.genai": "google-genai",
-        "edge_tts": "edge-tts",
-        "requests": "requests",
-        "PIL": "pillow",
-        "googleapiclient": "google-api-python-client"
-    }
-    for mod, pip in pkgs.items():
-        try:
-            __import__(mod)
-        except ImportError:
-            print(f"📦 Installing {pip}...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", pip, "--quiet"])
-
-auto_install()
-
-# --- ⚙️ 2. ตั้งค่าพื้นฐาน ---
+# --- ⚙️ ตั้งค่าพื้นฐาน ---
 SCENE_COUNT = 6
-VIDEO_PRIVACY = "private" # ตั้งเป็นส่วนตัวเพื่อให้คุณตรวจงานก่อนใน YouTube Studio
-# Anchor สำหรับล็อคสเปคภาพ: เน้นหน้าสมมาตร นิ้วมือครบ และสไตล์คมชัด
+VIDEO_PRIVACY = "private" 
 CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, symmetrical face, flawlessly drawn eyes, exactly 5 distinct fingers, business casual, high-detail anime webtoon style, masterpiece, 8k resolution, cinematic lighting"
 
 def get_audio_duration(file_path):
@@ -47,13 +27,13 @@ def get_audio_duration(file_path):
     return float(result.stdout.strip())
 
 def fetch_image(prompt, filename, scene_num):
-    print(f"🎨 ฉากที่ {scene_num}: กำลังวาดภาพแบบเน้นรายละเอียด...")
-    # ล้างอักขระพิเศษออกจาก Prompt ก่อนใส่ใน URL (แก้บัค SyntaxError)
-    clean_prompt = re.sub(r'[^\w\s]', '', str(prompt))
-    negative_prompt = "deformed anatomy, extra fingers, asymmetric eyes, text, watermark, blur"
+    print(f"🎨 ฉากที่ {scene_num}: กำลังวาดภาพ...")
+    # ✅ แก้ SyntaxError: แยกคำสั่งล้าง Prompt ออกมาข้างนอก f-string
+    clean_p = re.sub(r'[^\w\s]', '', str(prompt))
+    negative_p = "deformed anatomy, extra fingers, asymmetric eyes, text, watermark, blur"
     
-    full_p = f"{clean_prompt},{CHAR_ANCHOR},vibrant colors,masterpiece"
-    url = f"https://image.pollinations.ai/prompt/{full_p}?width=1080&height=1920&seed={random.randint(1,999999)}&nologo=true&model=flux&negative_prompt={negative_prompt.replace(' ', '%20')}"
+    full_p = f"{clean_p},{CHAR_ANCHOR},vibrant colors,masterpiece"
+    url = f"https://image.pollinations.ai/prompt/{full_p}?width=1080&height=1920&seed={random.randint(1,999999)}&nologo=true&model=flux&negative_prompt={negative_p.replace(' ', '%20')}"
     
     headers = {'User-Agent': 'Mozilla/5.0'}
     for _ in range(3):
@@ -66,7 +46,6 @@ def fetch_image(prompt, filename, scene_num):
     return False
 
 async def generate_voice(text, output_file):
-    # ปรับความเร็ว -5% เพื่อจังหวะที่นุ่มนวลและฟังง่าย
     communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-5%")
     await communicate.save(output_file)
 
@@ -76,12 +55,10 @@ def run_workflow():
         if not api_key: raise ValueError("ไม่พบ GEMINI_API_KEY")
         client = genai.Client(api_key=api_key.strip())
         
-        # สุ่มหมวดหมู่เนื้อหา
         cats = ["ความลับการเงินมหาเศรษฐี", "จิตวิทยาความสำเร็จ", "เรื่องแปลกในโลกการลงทุน", "นิสัยคนรวย"]
         selected_cat = random.choice(cats)
         print(f"🧠 หัวข้อวันนี้: {selected_cat}")
 
-        # สั่ง Gemini เขียนบทพร้อมเว้นวรรค (ใส่ , และ .)
         prompt_sys = f"""
         สร้างบท YouTube Shorts 60 วินาที หัวข้อ: {selected_cat}
         กฎเหล็ก:
@@ -97,13 +74,13 @@ def run_workflow():
         response = client.models.generate_content(model='models/gemini-2.0-flash', contents=prompt_sys)
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
 
-        # 🎙️ 1. สร้างเสียงพากย์ (ใส่จุดท้ายฉากเพื่อหยุดหายใจระหว่างเปลี่ยนรูป)
+        # 🎙️ 1. สร้างเสียงพากย์
+        import subprocess # นำเข้าเฉพาะที่จำเป็น
         full_script = " ".join([s['text'].strip() + "." for s in data['scenes']])
         asyncio.run(generate_voice(full_script, "v.mp3"))
         
         duration = get_audio_duration("v.mp3")
         scene_time = duration / SCENE_COUNT
-        print(f"⏱️ วิดีโอยาว {duration:.2f} วิ (ฉากละ {scene_time:.2f} วิ)")
 
         # 🖼️ 2. วาดภาพ 6 ฉาก
         for i, sc in enumerate(data['scenes']):
@@ -114,7 +91,6 @@ def run_workflow():
             for i in range(SCENE_COUNT): f.write(f"file 'i_{i}.jpg'\nduration {scene_time:.2f}\n")
             f.write(f"file 'i_5.jpg'")
 
-        # ตั้งค่า Filter: Zoom + ซับไตเติ้ลตรงกลาง (FontSize 120)
         vf = "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.001,1.3)':d=250:s=1080x1920"
         subs = []
         for i, sc in enumerate(data['scenes']):
@@ -124,7 +100,6 @@ def run_workflow():
         
         final_vf = f"{vf},{','.join(subs)}"
         
-        # คำสั่ง FFmpeg: เริ่มเพลง BGM วินาทีที่ 30
         cmd = ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", "l.txt", "-i", "v.mp3"]
         if os.path.exists("bg.mp3"):
             cmd.extend(["-ss", "30", "-i", "bg.mp3", "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.1[a2];[a1][a2]amix=inputs=2:duration=first[a]", "-map", "0:v", "-map", "[a]"])
@@ -135,7 +110,8 @@ def run_workflow():
 
         # 🚀 4. อัปโหลดสู่ YouTube
         print("🚀 กำลังส่งตรงไป YouTube...")
-        creds = YoutubeCredentials.from_authorized_user_info(json.loads(os.getenv("YOUTUBE_CREDENTIALS")))
+        creds_info = json.loads(os.getenv("YOUTUBE_CREDENTIALS"))
+        creds = YoutubeCredentials.from_authorized_user_info(creds_info)
         youtube = build("youtube", "v3", credentials=creds)
         youtube.videos().insert(
             part="snippet,status",
@@ -143,7 +119,7 @@ def run_workflow():
                   "status": {"privacyStatus": VIDEO_PRIVACY}},
             media_body=MediaFileUpload("final.mp4")
         ).execute()
-        print("✨ ภารกิจสำเร็จ! ตรวจคลิปได้ที่สตูดิโอครับ")
+        print("✨ ภารกิจสำเร็จ 100%!")
 
     except Exception as e:
         print(f"❌ พัง: {e}")
