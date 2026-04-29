@@ -1,28 +1,23 @@
-name: Autonomous Viral Shorts Generator
-
+name: YouTube Auto Bot - Ultimate
 on:
+  workflow_dispatch: # กดรันเองได้
   schedule:
-    - cron: '0 2 * * *' 
-  workflow_dispatch: 
+    - cron: '0 1 * * *' # รันอัตโนมัติทุกวันตอนเช้า (เลือกเวลาได้)
 
 jobs:
-  run-ai-system:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v3
+      - name: 📂 Checkout Code
+        uses: actions/checkout@v4
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: 📦 Install System & Python Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fontconfig
-          pip install google-genai edge-tts requests pillow google-api-python-client google-auth-oauthlib
+      - name: 🛠️ Install System FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: 🚀 Run Autonomous System
         env:
@@ -30,26 +25,4 @@ jobs:
           YOUTUBE_CREDENTIALS: ${{ secrets.YOUTUBE_CREDENTIALS }}
         run: python main.py
 
-      - name: 🧹 Organize Files (จัดแฟ้มและเปลี่ยนชื่อคลิป)
-        run: |
-          mkdir -p Ready_Videos
-          # เปลี่ยนชื่อไฟล์ final.mp4 ให้เติมวันที่และเวลาเข้าไปด้วย
-          DATE=$(date +'%Y-%m-%d_%H-%M')
-          mv final.mp4 Ready_Videos/Shorts_$DATE.mp4 || true
-
-      - name: 💾 Save to GitHub (เซฟเฉพาะของที่จำเป็น)
-        run: |
-          git config --global user.name "AI-Bot"
-          git config --global user.email "bot@ai.local"
-          # สั่งให้เซฟแค่โฟลเดอร์ output (สคริปต์) และ Ready_Videos (คลิป)
-          git add output/ Ready_Videos/
-          git commit -m "🤖 Auto-saved Video and Scripts" || echo "No changes to commit"
-          git pull --rebase origin main || true
-          git push || echo "Push skipped"
-
-      - name: 📥 Backup Video File (ดาวน์โหลดคลิปที่นี่)
-        uses: actions/upload-artifact@v4
-        if: always() 
-        with:
-          name: Viral-Shorts-Videos
-          path: Ready_Videos/
+      # หมายเหตุ: ลบส่วน Backup Artifacts ออกตามคำขอ เพื่อป้องกันพื้นที่เต็ม
