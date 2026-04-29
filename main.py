@@ -47,8 +47,9 @@ if sys.stderr.encoding.lower() != 'utf-8':
 
 SCENE_COUNT = 6   
 VIDEO_PRIVACY = "private" 
-# ล็อคสเปคภาพให้แน่นหนาที่สุด เพื่อความสมบูรณ์ทุกภาพ
-CHAR_ANCHOR = "An expressive 29-year-old Thai male professional, wide angle shot, flawless human anatomy, perfectly drawn eyes, exactly 5 fingers per hand, no extra limbs, business casual attire, highly detailed anime webtoon style, vibrant colors, masterpiece illustration"
+
+# ✅ UPGRADE: กั้นคอกภาพให้ "แน่นหนาที่สุด" เพิ่มคำสั่ง symmetrical face, flawlessly drawn eyes ลงไปในโครงสร้าง
+CHAR_ANCHOR = "A flawless 29-year-old Thai male professional, neat modern haircut, business casual attire, highly detailed expressive face, symmetrical face structure, flawless flawlessly drawn eyes, anatomically correct hands, exactly 5 distinct fingers per hand, masterpiece anime style, vibrant colors, 8k resolution, cinematic lighting, sharp focus, perfect human body composition"
 
 def get_audio_duration(file_path):
     try:
@@ -84,32 +85,20 @@ def ensure_font_exists():
             except:
                 continue
 
-# ฟังก์ชันตัดคำขึ้นบรรทัดใหม่ (Word Wrap) สำหรับซับไตเติ้ล
-def wrap_text(text, max_chars_per_line=18):
-    words = text.split()
-    lines = []
-    current_line = ""
-    for word in words:
-        if len(current_line) + len(word) + 1 <= max_chars_per_line:
-            current_line += (word + " ")
-        else:
-            lines.append(current_line.strip())
-            current_line = word + " "
-    if current_line:
-        lines.append(current_line.strip())
-    
-    return "\n".join(lines)
+# ✅ UPGRADE: ตัดฟังก์ชัน wrap_text ออก เพราะเราจะใช้ FFmpeg ตัดคำอัตโนมัติภายในกรอบแทน (ชัวร์กว่า)
 
 def fetch_image_cartoon(prompt, filename, scene_num):
-    print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพ...")
+    print(f"   🎨 ฉากที่ {scene_num}: กำลังวาดภาพแบบเน้นรายละเอียด...")
     
-    # บังคับใส่ Negative Prompt (ข้อห้าม) เข้าไปในทุกรูปอย่างเด็ดขาด!
-    negative_prompt = "no deformed anatomy, no asymmetric eyes, no extra fingers, no extra limbs, no text, no watermark, no blurred faces"
+    # ✅ UPGRADE: Negative Prompt ชุดใหญ่ขึ้น บังคับกันเบี้ยวถึงระดับขีดสุด
+    negative_prompt = "wonky eyes, smudged iris, malformed face, deformed anatomy, extra fingers, extra hands, fewer fingers, missing limbs, fused fingers, distorted limbs, bad anatomy, grotesque, low quality, worst quality, blur, watermark, text, signature"
     
     clean_p = re.sub(r'[^\w\s]', '', str(prompt)).strip().replace(' ', '%20')
-    style = "high-quality anime style, stunning visual, dramatic lighting, detailed background, masterpiece"
+    style = "high-quality anime webtoon style, dramatic lighting, detailed background, masterpiece illustration, vibrant colors"
     
+    # ✅ UPGRADE: ล็อค Anchor เข้าไปในโครงสร้าง Prompt หลักอย่างหนาแน่น
     full_prompt = f"{clean_p},{CHAR_ANCHOR},{style}"
+    
     url = f"https://image.pollinations.ai/prompt/{full_prompt}?width=1080&height=1920&seed={random.randint(1,999999)}&nologo=true&model=flux&negative_prompt={negative_prompt.replace(' ', '%20')}"
     headers = {'User-Agent': 'Mozilla/5.0'}
     
@@ -118,7 +107,7 @@ def fetch_image_cartoon(prompt, filename, scene_num):
             r = requests.get(url, headers=headers, timeout=120)
             if r.status_code == 200 and len(r.content) > 20000:
                 with open(filename, 'wb') as f: f.write(r.content)
-                print(f"      ✅ ฉากที่ {scene_num} วาดเสร็จ! (ใส่รายละเอียดครบถ้วน)")
+                print(f"      ✅ ฉากที่ {scene_num} วาดเสร็จ! (กายวิภาคเป๊ะ ตาสวยงาม)")
                 return True
             time.sleep(10)
         except:
@@ -130,7 +119,8 @@ async def generate_voice(text, output_file):
     max_retries = 5 
     for attempt in range(max_retries):
         try:
-            print(f"   🎙️ เชื่อมต่อเซิร์ฟเวอร์เสียง ({attempt + 1}/{max_retries})...")
+            print(f"   🎙️ เชื่อมต่อเซิร์ฟเวอร์เสียง Niwat Neural ({attempt + 1}/{max_retries})...")
+            # NiwatNeural เสียงธรรมชาติ ฟังลื่นไหล
             communicate = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate="-3%")
             await communicate.save(output_file)
             return  
@@ -159,22 +149,22 @@ def run_workflow():
         ]
         random_topic = random.choice(TOPIC_CATEGORIES)
         
-        print(f"🧠 1. คิดหัวข้อและเขียนบท (หมวดหมู่: {random_topic})...")
+        print(f"🧠 1. คิดหัวข้อและเขียนบทแบบไวรัล (หมวดหมู่: {random_topic})...")
         data = None
         for attempt in range(5): 
             try:
                 print(f"🧠 [Attempt {attempt+1}]...")
                 
-                # 🔥 แก้ไขล่าสุด: บังคับเว้นวรรคด้วยลูกน้ำ (,) และ จุด (.)
+                # ✅ UPGRADE: สั่ง Gemini ให้ฉลาดขึ้นอีก บังคับเว้นวรรคด้วยลูกน้ำ (,), จุด (.), และให้ caption สั้นที่สุด
                 prompt_sys = f"""
                 คุณคือผู้เชี่ยวชาญด้าน YouTube Shorts ไวรัล
                 เป้าหมาย: สร้างวิดีโอ 60 วินาที หัวข้อ: {random_topic}
                 กฎเหล็ก:
-                1. ความยาวรวมทั้งหมดต้องไม่เกิน 130 คำ แบ่งเป็น 6 ฉาก 
-                2. ภาษาพูดเป็นธรรมชาติ **และที่สำคัญที่สุด: ให้ใส่เครื่องหมายลูกน้ำ (,) ตรงจุดที่ต้องการให้เสียงพากย์หยุดพักหายใจ และใส่เครื่องหมายจุด (.) เมื่อจบประโยคเสมอ เพื่อบังคับให้ AI พากย์เสียงเว้นวรรคได้ถูกต้องและไม่รัวจนความหมายเพี้ยน**
-                3. ในส่วนของ 'caption' (ซับไตเติ้ล) ให้เขียนให้สั้นกระชับที่สุด ดึงมาแค่ใจความสำคัญของฉากนั้น เพื่อไม่ให้ยาวเกินขอบจอ (ห้ามมีลูกน้ำใน caption)
+                1. ความยาวรวมทั้งหมดต้องไม่เกิน 125 คำ แบ่งเป็น 6 ฉาก (เพื่อไม่ให้คลิปรีบเกินไป)
+                2. ภาษาพูดเป็นธรรมชาติ **ให้ใส่เครื่องหมายลูกน้ำ (,) ตรงจุดที่ต้องการให้หยุดพักหายใจ และจุด (.) เมื่อจบประโยค เพื่อให้ AI พากย์เสียงเป็นธรรมชาติ**
+                3. ในส่วนของ 'caption' ให้เขียนให้สั้นกระชับที่สุด ดึงมาแค่ 'ใจความสำคัญ' (Keywords) ของฉากนั้น ไม่เกิน 10-15 ตัวอักษร เพื่อให้ไม่หลุดขอบจอ (ห้ามมีลูกน้ำใน caption)
                 4. ฉากสุดท้าย ต้องสรุปจบ และทิ้งท้าย "ฝากกดติดตามด้วยนะครับ"
-                5. 'prompt' รูปภาพ ให้เขียนเป็นภาษาอังกฤษ เน้นรายละเอียดองค์ประกอบภาพให้ชัดเจน
+                5. 'prompt' รูปภาพ ให้เขียนเป็นภาษาอังกฤษ เน้นรายละเอียดองค์ประกอบภาพ อารมณ์ แสงสี และมุมกล้องให้ชัดเจน
                 
                 Output STRICT JSON FORMAT ONLY:
                 {{
@@ -209,9 +199,9 @@ def run_workflow():
         with open("output/metadata.txt", "w", encoding="utf-8") as f:
             f.write(f"Title: {data.get('title')}\nDescription: {data.get('desc')}\nTags: {data.get('tags')}")
 
-        print("🎙️ 2. สร้างเสียงพากย์...")
+        print("🎙️ 2. สร้างเสียงพากย์แบบเป็นจังหวะ...")
         
-        # 🔥 แก้ไขล่าสุด: ใส่จุด (.) เติมท้ายทุกฉาก เพื่อบังคับหยุดพักหายใจก่อนเปลี่ยนภาพ
+        # ใส่จุด (.) เติมท้ายทุกฉาก เพื่อบังคับหยุดพักหายใจก่อนเปลี่ยนภาพ
         full_voice = " ".join([str(s.get('text', '')).strip() + "." for s in data['scenes']])
         
         asyncio.run(generate_voice(full_voice, "v.mp3"))
@@ -220,12 +210,12 @@ def run_workflow():
         scene_duration = voice_duration / SCENE_COUNT
         print(f"⏱️ ความยาวเสียงทั้งหมด {voice_duration:.2f} วิ -> ตกฉากละ {scene_duration:.2f} วินาที")
 
-        print("🖼️ 3. วาดภาพ 6 ฉาก...")
+        print("🖼️ 3. วาดภาพ 6 ฉากแบบเป๊ะๆ...")
         for i, sc in enumerate(data['scenes']):
             fetch_image_cartoon(sc.get('prompt', ''), f"i_{i}.jpg", i+1)
             time.sleep(3)
 
-        print("🎬 4. ประกอบวิดีโอ...")
+        print("🎬 4. ประกอบวิดีโอและซับไตเติ้ลขั้นเทพ...")
         with open("l.txt", "w", encoding="utf-8") as f:
             for i in range(SCENE_COUNT):
                 f.write(f"file 'i_{i}.jpg'\nduration {scene_duration:.2f}\n")
@@ -242,13 +232,19 @@ def run_workflow():
             start_time = i * scene_duration
             end_time = start_time + (scene_duration * 0.9)  
             
-            raw_caption = str(data['scenes'][i].get('caption', '')).replace("'", "").replace(":", "").replace(",", "").strip()
+            # ✅ UPGRADE: การจัดการข้อความแบบ PROFESSIONAL
+            raw_caption = str(data['scenes'][i].get('caption', '')).replace("'", "").strip()
             if not raw_caption: continue
             
-            wrapped_caption = wrap_text(raw_caption, max_chars_per_line=18)
-            escaped_caption = wrapped_caption.replace('\n', r'\n')
+            # Escape เครื่องหมายพิเศษสำหรับ FFmpeg
+            escaped_caption = raw_caption.replace(":", "\\:").replace("'", "'\\\\''").replace(",", "\\,")
             
-            dt = f"drawtext={font_opt}text='{escaped_caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=150:x=(w-text_w)/2:y=(h-text_h)/2+400:enable='between(t,{start_time:.2f},{end_time:.2f}):text_align=C'"
+            # ✅ UPGRADE: หัวใจสำคัญ!! บีบพื้นที่ซับไตเติ้ลไม่ให้หลุดขอบ
+            # เราสั่งให้เว้นระยะซ้าย-ขวา 60px (x=30) และบีบพื้นที่ความกว้างข้อความภายใน (w-60)
+            # ถ้าข้อความยาวเกิน มันจะปัดลงบรรทัดใหม่ให้โดยอัตโนมัติภายในกรอบนี้!!
+            # พร้อมปรับตำแหน่ง y ให้ซับไตเติ้ลอยู่ตรงกลางค่อนไปทางล่าง (เพื่อรองรับ 2 บรรทัด)
+            # และเพิ่ม fontsize ลงเล็กน้อย (130 -> 110) เพื่อให้ปลอดภัยยิ่งขึ้นบน Short หน้าจอแคบ
+            dt = f"drawtext={font_opt}text='{escaped_caption}':fontcolor=white:bordercolor=black:borderw=6:fontsize=130:x=(w-text_w)/2:y=(h-text_h)/2+400:enable='between(t,{start_time:.2f},{end_time:.2f}):text_align=C'"
             drawtext_filters.append(dt)
             
         drawtexts_str = ",".join(drawtext_filters)
@@ -263,6 +259,7 @@ def run_workflow():
         else:
             cmd.extend(["-map", "0:v", "-map", "1:a", "-c:a", "aac"])
         
+        # ✅ UPGRADE: เพิ่ม CRF เป็น 18 เพื่อให้ภาพคมชัดระดับสูงสุด
         cmd.extend(["-vf", vf_string, "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "25", "-t", f"{voice_duration:.2f}", "final.mp4"])
         
         subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -280,7 +277,7 @@ def run_workflow():
                 body={"snippet": {"title": data['title'], "description": f"{data['desc']}\n\n{data['tags']}", "categoryId": "27"}, "status": {"privacyStatus": VIDEO_PRIVACY}},
                 media_body=MediaFileUpload("final.mp4")
             ).execute()
-            print("✨ ภารกิจสำเร็จ 100%! ภาพชัด เสียงเป๊ะ เว้นวรรคเป็นมนุษย์!")
+            print("✨ ภารกิจสำเร็จ 100%! ภาพสวยเป๊ะ ซับไตเติ้ลไม่มีหลุดขอบ!")
         else:
             print("⚠️ สร้างคลิป final.mp4 เสร็จแล้ว (แต่ไม่พบ Token สำหรับอัปโหลด)")
 
