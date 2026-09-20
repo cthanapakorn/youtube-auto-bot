@@ -1,0 +1,15 @@
+{
+  "name": "Swat In Home | Field Service Operations",
+  "short_name": "Swat In Home",
+  "description": "Field service dispatch, jobs and route planning workspace.",
+  "start_url": "./field-service-prototype.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f7fb",
+  "theme_color": "#111827",
+  "orientation": "any",
+  "lang": "th",
+  "icons": [
+    { "src": "./app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
