@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swat In Home | Field Service Prototype</title>
+  <meta name="theme-color" content="#111827" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <style>
+    :root{--ink:#102033;--muted:#718096;--line:#e7edf3;--bg:#f6f8fb;--card:#fff;--blue:#1464f4;--blue-soft:#eaf1ff;--green:#11865b;--green-soft:#e8f7f0;--amber:#a86b00;--amber-soft:#fff5da;--red:#c53d4c;--shadow:0 10px 28px #17324d0d}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}button,input,select{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.side{width:242px;background:#0d1f35;color:#dce8f6;padding:22px 14px;position:fixed;inset:0 auto 0 0}.brand{font-size:19px;font-weight:800;padding:0 12px 24px}.brand small{display:block;color:#81a1c4;font-size:11px;font-weight:500;margin-top:4px}.nav button{display:block;width:100%;text-align:left;background:transparent;color:#b9cbe0;border-radius:10px;padding:12px 13px;margin:4px 0}.nav button.active,.nav button:hover{background:#173a62;color:#fff}.side-note{position:absolute;left:22px;right:22px;bottom:24px;font-size:11px;line-height:1.5;color:#89a4c2}.main{margin-left:242px;width:calc(100% - 242px);padding:26px 34px 50px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.eyebrow{font-size:12px;color:var(--blue);font-weight:800;letter-spacing:.08em;text-transform:uppercase}.title{font-size:28px;font-weight:800;margin:4px 0}.subtitle{color:var(--muted);font-size:14px}.pill{border-radius:999px;padding:6px 11px;font-size:12px;display:inline-flex;align-items:center;gap:6px;font-weight:700}.pill.blue{background:var(--blue-soft);color:var(--blue)}.pill.green{background:var(--green-soft);color:var(--green)}.pill.amber{background:var(--amber-soft);color:var(--amber)}.pill.gray{background:#eef2f6;color:#607086}.primary{background:var(--blue);color:#fff;padding:11px 15px;border-radius:9px;font-weight:700}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink);padding:10px 14px;border-radius:9px;font-weight:700}.grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:22px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px}.kpi-label{color:var(--muted);font-size:13px}.kpi-value{font-size:30px;font-weight:800;margin-top:8px}.kpi-sub{font-size:12px;color:var(--muted);margin-top:5px}.two{grid-template-columns:1.4fr 1fr}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.section-title{font-size:16px;font-weight:800}.section-note{font-size:12px;color:var(--muted)}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;background:#f8fafc;color:#68778b;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:11px 10px;border-bottom:1px solid var(--line);white-space:nowrap}td{padding:13px 10px;border-bottom:1px solid var(--line);vertical-align:middle}tr:last-child td{border-bottom:0}.job{font-weight:800;color:var(--blue)}.muted{color:var(--muted)}.filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.filters input,.filters select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 11px;color:var(--ink)}.route{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:10px}.route-date{width:82px;font-weight:800;font-size:13px}.route-line{height:36px;width:3px;background:#cbdafa;border-radius:3px}.route-main{flex:1}.route-main strong{font-size:14px}.route-main small{display:block;color:var(--muted);margin-top:3px}.route-action{font-size:12px;color:var(--blue);font-weight:800}.people{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:12px}.avatar{width:27px;height:27px;border-radius:50%;background:#dce9ff;color:#205bd1;display:inline-flex;align-items:center;justify-content:center;font-weight:800}.team-card{padding:14px;border:1px solid var(--line);border-radius:11px;margin:10px 0}.team-row{display:flex;justify-content:space-between;align-items:center}.team-name{font-weight:800}.bar{height:7px;background:#edf1f5;border-radius:10px;margin-top:12px;overflow:hidden}.bar span{display:block;height:100%;background:var(--blue);border-radius:10px}.screen{display:none}.screen.active{display:block}.mobile-frame{max-width:430px;margin:0 auto;background:#f5f7fb;min-height:690px;border:10px solid #17283c;border-radius:30px;overflow:hidden;box-shadow:0 18px 44px #17324d1f}.mobile-head{background:#fff;padding:22px 18px 16px}.mobile-head .title{font-size:22px}.mobile-body{padding:15px}.mobile-nav{display:flex;background:#fff;border-top:1px solid var(--line);padding:10px 6px;justify-content:space-around;color:#8090a4;font-size:11px}.mobile-nav span.active{color:var(--blue);font-weight:800}.m-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:11px}.m-card h3{margin:0 0 8px;font-size:14px}.m-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}.m-meta label{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}.status-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.status-buttons button{padding:10px 6px;background:#f4f7fb;color:#516276;border-radius:8px;font-size:11px}.status-buttons button.selected{background:var(--blue);color:#fff}.notice{padding:12px;border-radius:10px;background:#fff5da;color:#8a620e;font-size:12px;line-height:1.5}.legend{display:flex;gap:15px;flex-wrap:wrap;color:var(--muted);font-size:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.map{height:210px;border-radius:12px;background:linear-gradient(135deg,#eaf3ef 0 28%,#dce8f5 28% 53%,#eef3e9 53%);position:relative;overflow:hidden;border:1px solid var(--line)}.map:before{content:"";position:absolute;left:15%;top:48%;width:78%;height:3px;background:#f5b45b;transform:rotate(-20deg);box-shadow:0 18px 0 #fff}.pin{position:absolute;background:#1464f4;color:#fff;border-radius:50% 50% 50% 0;width:25px;height:25px;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;font-size:11px}.pin b{transform:rotate(45deg)}.p1{left:25%;top:54%}.p2{left:57%;top:32%}.p3{left:76%;top:60%}.empty{padding:24px;text-align:center;color:var(--muted)}@media(max-width:900px){.side{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:22px}.kpis{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}@media(max-width:620px){.side{display:none}.main{margin-left:0;width:100%;padding:18px}.top{align-items:flex-start}.title{font-size:23px}.kpis{grid-template-columns:1fr 1fr}.card{padding:14px}}
+    .modal-backdrop{display:none;position:fixed;inset:0;background:#07172999;z-index:20;align-items:center;justify-content:center;padding:18px}.modal-backdrop.open{display:flex}.modal{width:min(620px,100%);background:#fff;border-radius:16px;box-shadow:0 24px 70px #07172955;padding:22px}.modal-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:18px}.close{background:#f2f5f8;color:#5f7187;width:32px;height:32px;border-radius:50%;font-size:20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:800;color:#607086}.field input,.field select{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;color:var(--ink)}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}@media(max-width:520px){.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+  </style>
+  <style>
+    /* Executive operations redesign — inspired by modern enterprise service sites. */
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+    :root{
+      --ink:#102b49;--ink-strong:#09213c;--muted:#6b8199;--line:#dce8f2;
+      --bg:#f3f7fb;--card:#ffffff;--blue:#1464f4;--blue-deep:#0a4fd4;
+      --blue-soft:#eaf2ff;--green:#11865b;--green-soft:#e7f7f0;
+      --amber:#a86b00;--amber-soft:#fff4d8;--shadow:0 18px 50px rgba(24,67,109,.08);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'IBM Plex Sans Thai','Noto Sans Thai',Inter,system-ui,sans-serif;color:var(--ink);background:
+      radial-gradient(circle at 85% 4%,rgba(20,100,244,.07),transparent 30%),
+      linear-gradient(135deg,#f7fbff 0%,#eef5fb 55%,#f7faff 100%);letter-spacing:-.01em}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.26;background-image:linear-gradient(rgba(28,80,130,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(28,80,130,.035) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 82%);z-index:-1}
+    .side{width:264px;padding:30px 18px;background:linear-gradient(180deg,#0b223b 0%,#0b2947 58%,#0c3962 100%);border-right:1px solid rgba(156,199,244,.16);box-shadow:10px 0 35px rgba(5,34,61,.12)}
+    .brand{font-family:Manrope,sans-serif;font-size:21px;letter-spacing:.08em;padding:0 14px 28px;color:#f2f7ff}.brand small{font-family:'IBM Plex Sans Thai',sans-serif;color:#9bb8d8;letter-spacing:.08em;font-size:11px;margin-top:7px}
+    .nav{display:grid;gap:5px}.nav button{position:relative;display:flex;align-items:center;gap:11px;border:1px solid transparent;color:#b9cde3;border-radius:12px;padding:13px 14px;margin:0;font-size:14px;transition:background .25s ease,color .25s ease,transform .25s ease,border-color .25s ease}.nav button:before{font-family:Manrope,sans-serif;font-size:13px;opacity:.75;width:18px;text-align:center}.nav button[data-screen="dashboard"]:before{content:'◈'}.nav button[data-screen="jobs"]:before{content:'▤'}.nav button[data-screen="daily"]:before{content:'◫'}.nav button[data-screen="routes"]:before{content:'↝'}.nav button[data-screen="teams"]:before{content:'◎'}.nav button[data-screen="technician"]:before{content:'⌁'}.nav button:hover{background:rgba(96,164,239,.13);border-color:rgba(152,204,255,.12);transform:translateX(3px)}.nav button.active{background:linear-gradient(90deg,#1a568d,#16436e);border-color:rgba(129,190,255,.24);box-shadow:inset 3px 0 #65a9ff;color:#fff}
+    .quick-settings{border:1px solid rgba(147,196,241,.18);background:rgba(255,255,255,.06);border-radius:16px;padding:13px 12px;margin:8px 0 18px;box-shadow:inset 0 1px rgba(255,255,255,.04)}.quick-settings-title{font-family:Manrope,sans-serif;color:#8db6dc;font-weight:800;font-size:10px;letter-spacing:.14em;margin-bottom:9px}.setting-row{font-size:12px;color:#c5d8eb;gap:10px}.setting-buttons button{border-radius:9px;background:rgba(255,255,255,.09);color:#c9def2;transition:all .2s ease}.setting-buttons button:hover{background:#287bc4;color:#fff;transform:translateY(-2px)}
+    .side-note{left:28px;right:28px;color:#9db8d2;border-top:1px solid rgba(155,198,236,.16);padding-top:17px}
+    .main{margin-left:264px;width:calc(100% - 264px);padding:36px 42px 64px;max-width:1720px}.top{margin-bottom:28px;align-items:flex-end}.eyebrow{font-family:Manrope,sans-serif;letter-spacing:.16em;color:#1c6cdb;font-size:11px}.title{font-family:Manrope,'IBM Plex Sans Thai',sans-serif;color:var(--ink-strong);font-size:34px;letter-spacing:-.045em;margin:7px 0 2px}.subtitle{color:var(--muted);font-size:14px}.primary{background:linear-gradient(135deg,#1f73ff,#0c56d8);border-radius:11px;box-shadow:0 9px 20px rgba(20,100,244,.2);padding:12px 17px;transition:transform .25s ease,box-shadow .25s ease}.primary:hover{transform:translateY(-2px);box-shadow:0 13px 26px rgba(20,100,244,.3)}
+    .card{background:rgba(255,255,255,.82);border:1px solid rgba(205,222,237,.96);border-radius:20px;box-shadow:var(--shadow);padding:22px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:box-shadow .3s ease,transform .3s ease,border-color .3s ease}.card:hover{border-color:#c1d9ef;box-shadow:0 22px 54px rgba(24,67,109,.12)}.kpis{gap:18px;margin-bottom:24px}.kpi-label{font-size:12px;color:#7188a1;font-weight:600}.kpi-value{font-family:Manrope,sans-serif;font-size:36px;color:var(--ink-strong);letter-spacing:-.06em}.kpi-sub{font-size:12px;color:#7c92a7}.two{gap:20px;grid-template-columns:minmax(0,1.42fr) minmax(360px,1fr)}.section-head{margin-bottom:14px}.section-title{font-family:Manrope,'IBM Plex Sans Thai',sans-serif;font-size:18px;color:var(--ink-strong)}.section-note{font-size:12px;color:#738aa1}
+    .route,.team-card{background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(243,249,255,.82));border:1px solid #d8e7f2;border-radius:16px;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}.route:hover,.team-card:hover{transform:translateY(-2px);border-color:#a8c9e8;box-shadow:0 12px 24px rgba(37,99,151,.1)}.route-action{transition:color .2s ease,transform .2s ease}.route-action:hover{transform:translateX(3px);color:var(--blue-deep)}.team-card{margin:9px 0}.team-name,.route-main strong{font-family:Manrope,'IBM Plex Sans Thai',sans-serif;color:var(--ink-strong)}.bar{background:#e8eff5;height:8px}.bar span{background:linear-gradient(90deg,#1464f4,#4c9bff);box-shadow:0 0 12px rgba(20,100,244,.24)}
+    .filters input,.filters select,.field input,.field select,.field textarea{border-color:#d7e4ef;border-radius:10px;background:rgba(255,255,255,.9);transition:border-color .2s ease,box-shadow .2s ease}.filters input:focus,.filters select:focus,.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#6aa7ec;box-shadow:0 0 0 4px rgba(20,100,244,.1)}th{background:#f2f7fb;color:#56708a;letter-spacing:.1em}td{border-color:#e1ebf3}.secondary{border-color:#d8e5ef;border-radius:10px;background:rgba(255,255,255,.84);transition:all .2s ease}.secondary:hover{border-color:#8ab9e7;color:var(--blue);transform:translateY(-1px)}
+    .modal-backdrop{background:rgba(7,27,49,.58);backdrop-filter:blur(6px)}.modal{border:1px solid rgba(211,229,243,.95);border-radius:22px;box-shadow:0 35px 90px rgba(4,30,56,.27);animation:modalIn .28s ease both}.close{transition:transform .2s ease,background .2s ease}.close:hover{transform:rotate(90deg);background:#e7f0f8}
+    .screen.active{animation:pageIn .48s cubic-bezier(.2,.7,.2,1) both}.screen.active .card,.screen.active .top{animation:riseIn .55s cubic-bezier(.2,.7,.2,1) both}.screen.active .card:nth-child(2){animation-delay:.05s}.screen.active .card:nth-child(3){animation-delay:.1s}
+    @keyframes pageIn{from{opacity:.2}to{opacity:1}}@keyframes riseIn{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes pulseLine{0%,100%{box-shadow:0 0 0 0 rgba(50,133,237,.25)}50%{box-shadow:0 0 0 6px rgba(50,133,237,0)}}
+    .route-line{animation:pulseLine 2.8s ease-in-out infinite}.pill{letter-spacing:.01em}.notice{border:1px solid #f0dfad;border-radius:15px}.map{border-color:#cfe1ed;box-shadow:inset 0 0 30px rgba(70,135,182,.08)}
+    @media(max-width:1100px){.main{padding:30px 24px}.side{width:236px}.main{margin-left:236px;width:calc(100% - 236px)}.two{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:620px){.main{margin-left:0;width:100%;padding:20px 15px}.side{display:none}.title{font-size:27px}.top{align-items:flex-start;gap:14px;flex-direction:column}.kpis{grid-template-columns:1fr 1fr;gap:10px}.card{padding:16px;border-radius:16px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+  </style>
+  <style>
+    /* Full visual system pass: editorial, spacious and product-grade. */
+    :root{--ink:#111827;--ink-strong:#050b14;--muted:#6e7785;--line:#e5e7eb;--bg:#f5f5f7;--card:#fff;--blue:#0071e3;--blue-soft:#eaf3ff;--shadow:0 12px 35px rgba(0,0,0,.055)}
+    body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;letter-spacing:-.012em}
+    body:before{opacity:.08;background-size:72px 72px;mask-image:linear-gradient(to bottom,#000,transparent 60%)}
+    .app{display:block;min-height:100vh}
+    .side{position:sticky;top:0;inset:auto;width:100%;height:76px;padding:0 32px;display:flex;align-items:center;gap:24px;background:rgba(255,255,255,.82);color:var(--ink);border-right:0;border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 3px 18px rgba(0,0,0,.04);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);z-index:15}
+    .brand{order:1;min-width:188px;padding:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;font-size:16px;font-weight:700;letter-spacing:.14em;color:#111;line-height:1}.brand small{color:#7c8490;font-size:9px;letter-spacing:.12em;margin-top:7px}
+    .nav{order:2;display:flex;align-items:center;gap:3px;flex:1}.nav button{width:auto;margin:0;padding:9px 11px;border-radius:8px;color:#646b76;font-size:12px;white-space:nowrap;border:1px solid transparent}.nav button:before{display:none}.nav button:hover{transform:none;background:#f2f2f4;border-color:transparent;color:#111}.nav button.active{background:#111;color:#fff;border-color:#111;box-shadow:none}
+    .quick-settings{order:3;margin:0;padding:7px 10px;border:1px solid #e1e3e7;background:rgba(250,250,252,.92);border-radius:12px;display:flex;align-items:center;gap:10px;box-shadow:none}.quick-settings-title{display:none}.setting-row{display:flex;align-items:center;gap:6px;color:#6c7480;font-size:11px;white-space:nowrap}.setting-buttons{display:flex;gap:3px}.setting-buttons button{min-width:25px;height:25px;padding:0;border-radius:7px;background:#f0f1f3;color:#47505c;font-size:10px}.setting-buttons button:hover{transform:none;background:#111;color:#fff}.side-note{display:none}
+    .main{margin:0;width:100%;max-width:1600px;padding:68px clamp(24px,5vw,82px) 100px;margin-inline:auto}.top{max-width:1200px;margin:0 auto 48px;align-items:flex-end}.eyebrow{font-size:11px;letter-spacing:.16em;color:#727984;font-weight:700}.title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','IBM Plex Sans Thai',sans-serif;color:#050b14;font-size:clamp(40px,5vw,74px);font-weight:700;letter-spacing:-.075em;line-height:.98;margin:13px 0 12px}.subtitle{font-size:15px;color:#7b8490}.primary{border-radius:999px;background:#0071e3;padding:13px 20px;box-shadow:none;font-size:13px;transition:background .2s ease,transform .2s ease}.primary:hover{background:#0077ed;transform:scale(1.025);box-shadow:none}
+    .kpis,.grid.two{max-width:1200px;margin-inline:auto}.kpis{gap:12px;margin-bottom:18px}.card{border:1px solid rgba(0,0,0,.075);background:rgba(255,255,255,.95);border-radius:22px;box-shadow:var(--shadow);padding:24px;backdrop-filter:none;-webkit-backdrop-filter:none}.card:hover{border-color:#d1d5db;box-shadow:0 18px 45px rgba(0,0,0,.08);transform:translateY(-1px)}.kpi-label{font-size:12px;color:#7c8490}.kpi-value{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;color:#050b14;font-size:42px;letter-spacing:-.07em;margin-top:14px}.kpi-sub{font-size:12px;color:#8a929d;margin-top:8px}.two{grid-template-columns:minmax(0,1.45fr) minmax(360px,1fr);gap:18px}.section-head{margin-bottom:18px}.section-title{font-size:20px;letter-spacing:-.035em}.section-note{font-size:12px;color:#8a929d}.route,.team-card{background:#fbfbfc;border:1px solid #e5e7eb;border-radius:17px;box-shadow:none}.route{padding:17px;margin-top:10px}.route:hover,.team-card:hover{transform:none;border-color:#c9cdd3;box-shadow:0 7px 22px rgba(0,0,0,.05)}.route-date{width:84px;color:#111;font-size:13px}.route-line{background:#d6e7fb;animation:none}.route-main strong,.team-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','IBM Plex Sans Thai',sans-serif;color:#111;font-size:15px}.route-main small{color:#7b8490}.route-action{color:#0071e3}.team-card{padding:16px;margin:10px 0}.team-row>.pill{font-size:11px}.bar{background:#e9eaec;box-shadow:none}.bar span{background:#111;box-shadow:none}.pill{font-size:11px;padding:7px 10px}.pill.blue{background:#eef5ff;color:#0066cc}.pill.green{background:#eaf8f1;color:#138052}.pill.amber{background:#fff3d9;color:#9c6200}
+    .filters input,.filters select{border:1px solid #d9dce1;background:#fff;border-radius:10px;padding:11px 13px}.filters input:focus,.filters select:focus{border-color:#0071e3;box-shadow:0 0 0 3px rgba(0,113,227,.12)}.secondary{border:1px solid #d9dce1;border-radius:999px;background:#fff;padding:10px 14px}.secondary:hover{border-color:#111;color:#111;transform:none}th{background:#fafafa;border-bottom-color:#e5e7eb;color:#737b86}td{border-bottom-color:#eceef0}
+    .modal{border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.22)}.modal-backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(8px)}
+    .screen.active{animation:applePageIn .5s cubic-bezier(.22,.61,.36,1) both}.screen.active .top{animation:appleRise .7s cubic-bezier(.22,.61,.36,1) both}.screen.active .card{animation:appleRise .7s cubic-bezier(.22,.61,.36,1) both}.screen.active .card:nth-child(2){animation-delay:.06s}.screen.active .card:nth-child(3){animation-delay:.12s}.screen.active .card:nth-child(4){animation-delay:.18s}
+    @keyframes applePageIn{from{opacity:0}to{opacity:1}}@keyframes appleRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:980px){.side{height:auto;min-height:76px;flex-wrap:wrap;padding:16px 22px;gap:12px}.brand{min-width:160px}.nav{order:4;flex-basis:100%;overflow-x:auto;padding-bottom:2px}.quick-settings{margin-left:auto}.main{padding-top:45px}.two{grid-template-columns:1fr}}
+    @media(max-width:620px){.side{position:sticky}.brand{min-width:0}.brand small{display:none}.quick-settings{padding:5px 7px}.quick-settings .setting-row>span{display:none}.nav button{padding:8px 10px;font-size:11px}.main{padding:36px 15px 70px}.top{margin-bottom:30px}.title{font-size:43px}.kpis{grid-template-columns:1fr 1fr;gap:9px}.card{padding:18px;border-radius:18px}.kpi-value{font-size:34px}.two{gap:12px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">SWAT IN HOME<small>Field service operations</small></div>
+    <div class="quick-settings" aria-label="Display settings">
+      <div class="quick-settings-title">DISPLAY</div>
+      <div class="setting-row"><span>Theme</span><div class="setting-buttons"><button type="button" data-theme-choice="light" title="Light theme">☼</button><button type="button" data-theme-choice="dark" title="Dark theme">◐</button><button type="button" data-theme-choice="glass" title="Glass theme">◇</button></div></div>
+      <div class="setting-row"><span>Language</span><div class="setting-buttons language-buttons"><button type="button" data-lang-choice="th" title="ภาษาไทย">TH</button><button type="button" data-lang-choice="en" title="English (US)">EN</button></div></div>
+    </div>
+    <nav class="nav">
+      <button class="active" data-screen="dashboard">ภาพรวมวันนี้</button>
+      <button data-screen="jobs">รายการงาน</button>
+      <button data-screen="daily">ตารางช่างรายวัน</button>
+      <button data-screen="routes">จัดรอบวิ่งงาน</button>
+      <button data-screen="teams">ทีมและ CAPA</button>
+      <button data-screen="technician">มุมมองแอปช่าง</button>
+    </nav>
+    <div class="side-note">ศูนย์หลัก: ระยอง<br>พื้นที่: ระยอง · จันทบุรี · ตราด<br>CAPA ทีมระยอง: 5 งาน/วัน</div>
+  </aside>
+  <main class="main">
+    <section id="dashboard" class="screen active">
+      <div class="top"><div><div class="eyebrow">Admin workspace</div><div class="title">ภาพรวมวันนี้</div><div class="subtitle">ศุกร์ 18 กันยายน 2026 · ศูนย์ระยอง</div></div><button class="primary" onclick="showScreen('jobs')">+ เพิ่มงาน</button></div>
+      <div class="grid kpis"><div class="card"><div class="kpi-label">งานทั้งหมดวันนี้</div><div class="kpi-value">18</div><div class="kpi-sub">เพิ่มขึ้น 3 งานจากเมื่อวาน</div></div><div class="card"><div class="kpi-label">งานระยอง</div><div class="kpi-value">12</div><div class="kpi-sub">กระจายให้ 3 ทีม</div></div><div class="card"><div class="kpi-label">รอบต่างจังหวัด</div><div class="kpi-value">1</div><div class="kpi-sub">HA1 · 18–19 ก.ย.</div></div><div class="card"><div class="kpi-label">งานยังไม่จัดทีม</div><div class="kpi-value" style="color:var(--amber)">2</div><div class="kpi-sub">ต้องจัดคิวก่อน 10:00 น.</div></div></div>
+      <div class="grid two"><div class="card"><div class="section-head"><div><div class="section-title">รอบวิ่งปัจจุบัน</div><div class="section-note">รอบ 2 วัน · ค้างคืน 1 คืน</div></div><span class="pill blue">กำลังเดินทาง</span></div><div class="route"><div class="route-date">18–19<br><span class="muted">ก.ย.</span></div><div class="route-line"></div><div class="route-main"><strong>HA1 · จันทบุรี + ตราด</strong><small>ช่างเต้ย · ผู้ช่วยโบ้น · 6 งาน</small></div><div class="route-action" onclick="showScreen('routes')">ดูรอบ →</div></div><div class="route"><div class="route-date">20–21<br><span class="muted">ก.ย.</span></div><div class="route-line" style="background:#d9e8df"></div><div class="route-main"><strong>HA2 · รอเริ่มรอบ</strong><small>ช่างเจมส์ · ยังไม่เลือกผู้ช่วย</small></div><div class="route-action" onclick="showScreen('routes')">จัดรอบ →</div></div></div><div class="card"><div class="section-head"><div><div class="section-title">คิวทีมวันนี้</div><div class="section-note">ทีมระยองไม่เกิน 5 งาน/วัน</div></div><span class="pill green">3 ทีมพร้อม</span></div><div class="team-card"><div class="team-row"><div><span class="team-name">HA2</span> <span class="muted">เจมส์ · ณุ</span></div><span class="pill green">4 / 5 งาน</span></div><div class="bar"><span style="width:80%"></span></div></div><div class="team-card"><div class="team-row"><div><span class="team-name">HA3</span> <span class="muted">สอง · ไปรท์</span></div><span class="pill amber">5 / 5 งาน</span></div><div class="bar"><span style="width:100%;background:#d39522"></span></div></div><div class="team-card"><div class="team-row"><div><span class="team-name">HA4</span> <span class="muted">นุ๊ก · เบิ้ล</span></div><span class="pill green">3 / 5 งาน</span></div><div class="bar"><span style="width:60%"></span></div></div></div></div>
+      <div class="card" style="margin-top:16px"><div class="section-head"><div class="section-title">แผนที่รวม</div><span class="section-note">ตำแหน่งงานตามพื้นที่ · ข้อมูลตัวอย่าง</span></div><div class="map"><div class="pin p1"><b>1</b></div><div class="pin p2"><b>2</b></div><div class="pin p3"><b>3</b></div></div><div class="legend" style="margin-top:12px"><span><i class="dot" style="background:#1464f4"></i>งานระยอง</span><span><i class="dot" style="background:#f5a623"></i>รอบจันทบุรี + ตราด</span><span><i class="dot" style="background:#cbd5e1"></i>ยังไม่จัดทีม</span></div></div>
+    </section>
+
+    <section id="jobs" class="screen"><div class="top"><div><div class="eyebrow">Job control</div><div class="title">รายการงาน</div><div class="subtitle">งานทั้งหมดจากศูนย์ระยอง</div></div><button class="primary" onclick="alert('Prototype: เปิดฟอร์มเพิ่มงาน')">+ เพิ่มงาน</button></div><div class="card"><div class="filters"><input placeholder="ค้นหา JOB / ลูกค้า / รุ่น" oninput="filterJobs(this.value)"><select><option>ทุกสถานะ</option><option>เสนอราคา</option><option>รอตัดสินใจ</option><option>ยืนยันนัดหมาย</option><option>Goods Delivery</option><option>เลื่อนนัดหมาย</option></select><select><option>ทุกพื้นที่</option><option>ระยอง</option><option>จันทบุรี</option><option>ตราด</option></select><select><option>18 ก.ย. 2026</option><option>19 ก.ย. 2026</option><option>20 ก.ย. 2026</option></select></div><div class="table-wrap"><table><thead><tr><th>JOB</th><th>นัดหมาย</th><th>พื้นที่</th><th>สินค้า / รุ่น</th><th>ทีม</th><th>สถานะ</th><th></th></tr></thead><tbody id="jobRows"><tr><td class="job">4439049100</td><td>09:00</td><td>เมืองจันทบุรี</td><td>RAC<br><span class="muted">AR50H18D1CHNST</span></td><td>HA1</td><td><span class="pill blue">ยืนยันนัดหมาย</span></td><td><button class="secondary" onclick="alert('Prototype: เปิดรายละเอียด JOB 4439049100')">ดู</button></td></tr><tr><td class="job">4439141199</td><td>10:30</td><td>เมืองตราด</td><td>REF<br><span class="muted">RT20HAR1DSA/ST</span></td><td>HA1</td><td><span class="pill amber">รอตัดสินใจ</span></td><td><button class="secondary">ดู</button></td></tr><tr><td class="job">4439236093</td><td>09:30</td><td>เมืองระยอง</td><td>REF<br><span class="muted">RT29K5511S8/ST</span></td><td>HA2</td><td><span class="pill green">Goods Delivery</span></td><td><button class="secondary">ดู</button></td></tr><tr><td class="job">4439348238</td><td>13:00</td><td>บ้านฉาง</td><td>REF<br><span class="muted">RT38CG6020B1ST</span></td><td>HA3</td><td><span class="pill gray">เสนอราคา</span></td><td><button class="secondary">ดู</button></td></tr><tr><td class="job">4437559320</td><td>14:30</td><td>นิคมพัฒนา</td><td>WM<br><span class="muted">WA16CG6745BDST</span></td><td>HA4</td><td><span class="pill blue">ยืนยันนัดหมาย</span></td><td><button class="secondary">ดู</button></td></tr></tbody></table></div></div></section>
+
+    <section id="routes" class="screen"><div class="top"><div><div class="eyebrow">Route planning</div><div class="title">จัดรอบวิ่งงาน</div><div class="subtitle">หมุนทีมทุก 2 วันและรองรับการข้ามเดือน</div></div><button class="primary" onclick="alert('Prototype: สร้างรอบใหม่')">+ สร้างรอบ</button></div><div class="card"><div class="filters"><select><option>กันยายน 2026</option><option>ตุลาคม 2026</option></select><select><option>ทุกทีม</option><option>HA1</option><option>HA2</option><option>HA3</option><option>HA4</option></select><span class="pill blue">จันทบุรี + ตราด · 1 ทีม/รอบ</span></div><div class="route"><div class="route-date">18–19 ก.ย.</div><div class="route-line"></div><div class="route-main"><strong>HA1 · จันทบุรี + ตราด</strong><small>ช่างเต้ย · ผู้ช่วยโบ้น · 6 งาน · ค้างคืน 1 คืน</small></div><span class="pill green">ยืนยันแล้ว</span><button class="secondary">แก้ไข</button></div><div class="route"><div class="route-date">20–21 ก.ย.</div><div class="route-line"></div><div class="route-main"><strong>HA2 · จันทบุรี + ตราด</strong><small>ช่างเจมส์ · ผู้ช่วยณุ · ยังไม่จัดงาน</small></div><span class="pill gray">รอจัด</span><button class="secondary">แก้ไข</button></div><div class="route"><div class="route-date">22–23 ก.ย.</div><div class="route-line"></div><div class="route-main"><strong>HA3 · จันทบุรี + ตราด</strong><small>ช่างสอง · ผู้ช่วยไปรท์ · ยังไม่จัดงาน</small></div><span class="pill gray">รอจัด</span><button class="secondary">แก้ไข</button></div><div class="route"><div class="route-date">30 ก.ย.–1 ต.ค.</div><div class="route-line" style="background:#d9e8df"></div><div class="route-main"><strong>HA3 · ข้ามเดือน</strong><small>ระบบต่อรอบให้อัตโนมัติ แต่แอดมินเปลี่ยนทีมได้</small></div><span class="pill gray">รอจัด</span><button class="secondary">แก้ไข</button></div></div><div class="card" style="margin-top:16px"><div class="section-head"><div class="section-title">กติกาการจัดรอบ</div><span class="section-note">ระบบตรวจสอบก่อนบันทึก</span></div><div class="notice">รอบมาตรฐานใช้ 1 ทีมต่อ 2 วัน ครอบคลุมจันทบุรีและตราด หากงานมาก แอดมินกด “เพิ่มทีม” ได้ ระบบจะตรวจผู้ช่วยซ้ำและล็อกผู้ช่วยของทีมต่างจังหวัดตลอดรอบ</div></div></section>
+
+    <section id="teams" class="screen"><div class="top"><div><div class="eyebrow">People & capacity</div><div class="title">ทีมและ CAPA</div><div class="subtitle">ช่างหลัก 4 ทีม · ผู้ช่วยสลับได้</div></div></div><div class="card"><div class="table-wrap"><table><thead><tr><th>ทีม</th><th>ช่างหลัก</th><th>ผู้ช่วยวันนี้</th><th>พื้นที่</th><th>งานวันนี้</th><th>สถานะ</th></tr></thead><tbody><tr><td><b>HA1</b></td><td>เต้ย</td><td>โบ้น</td><td>จันทบุรี + ตราด</td><td>6</td><td><span class="pill blue">เดินทาง</span></td></tr><tr><td><b>HA2</b></td><td>เจมส์</td><td>ณุ</td><td>ระยอง</td><td>4 / 5</td><td><span class="pill green">พร้อม</span></td></tr><tr><td><b>HA3</b></td><td>สอง</td><td>ไปรท์</td><td>ระยอง</td><td>5 / 5</td><td><span class="pill amber">เต็ม CAPA</span></td></tr><tr><td><b>HA4</b></td><td>นุ๊ก</td><td>เบิ้ล</td><td>ระยอง</td><td>3 / 5</td><td><span class="pill green">พร้อม</span></td></tr></tbody></table></div></div><div class="grid two" style="margin-top:16px"><div class="card"><div class="section-title">ผู้ช่วยที่สลับได้</div><div class="people"><span class="avatar">ณ</span> ณุ <span class="muted">ว่างสำหรับงานระยอง</span></div><div class="people"><span class="avatar">ไ</span> ไปรท์ <span class="muted">ว่างสำหรับงานระยอง</span></div><div class="people"><span class="avatar">บ</span> เบิ้ล <span class="muted">ว่างสำหรับงานระยอง</span></div></div><div class="card"><div class="section-title">วันหยุด/ลา</div><div class="notice" style="margin-top:12px">วันนี้ยังไม่มีรายการวันหยุดหรือลาที่กระทบคิวงาน</div></div></div></section>
+
+    <section id="technician" class="screen"><div class="top"><div><div class="eyebrow">Mobile preview</div><div class="title">มุมมองแอปช่าง</div><div class="subtitle">ตัวอย่างหน้าจอสำหรับช่างเต้ย · HA1</div></div><button class="secondary" onclick="alert('Prototype: สลับเป็นมุมมองช่างคนอื่น')">สลับผู้ใช้</button></div><div class="mobile-frame"><div class="mobile-head"><div class="eyebrow">ทีม HA1</div><div class="title">สวัสดี เต้ย</div><div class="subtitle">ศุกร์ 18 กันยายน 2026</div><div style="display:flex;gap:8px;margin-top:13px"><span class="pill blue">จันทบุรี + ตราด</span><span class="pill gray">ผู้ช่วย โบ้น</span></div></div><div class="mobile-body"><div class="m-card"><h3>คิววันนี้ <span style="float:right;color:var(--blue)">3 งาน</span></h3><div class="m-meta"><div><label>รอบวิ่ง</label>18–19 ก.ย.</div><div><label>สถานะ</label><span class="pill green">กำลังเดินทาง</span></div></div></div><div class="m-card"><h3>JOB 4439049100</h3><div class="m-meta"><div><label>นัดหมาย</label>09:00 น.</div><div><label>พื้นที่</label>เมืองจันทบุรี</div><div><label>สินค้า</label>RAC</div><div><label>รุ่น</label>AR50H18D1CHNST</div></div><div style="margin-top:12px;color:var(--muted);font-size:12px">อาการ: เครื่องไม่เย็น ทำงานต่อเนื่อง</div><div class="status-buttons"><button class="selected">ยืนยันนัดหมาย</button><button>เลื่อนนัดหมาย</button><button>เสนอราคา</button><button>รอตัดสินใจ</button><button>Goods Delivery</button></div></div><div class="m-card"><h3>JOB 4439141199</h3><div class="m-meta"><div><label>นัดหมาย</label>10:30 น.</div><div><label>พื้นที่</label>เมืองตราด</div><div><label>สินค้า</label>REF</div><div><label>สถานะ</label><span class="pill amber">รอตัดสินใจ</span></div></div></div></div><div class="mobile-nav"><span class="active">⌂<br>วันนี้</span><span>▣<br>คิวงาน</span><span>◉<br>แผนที่</span><span>☰<br>เพิ่มเติม</span></div></div></section>
+    <section id="daily" class="screen"><div class="top"><div><div class="eyebrow">Daily dispatch</div><div class="title">ตารางช่างรายวัน</div><div class="subtitle">ดูคิวงาน, CAPA และพื้นที่วิ่งในหน้าเดียว</div></div><button class="primary" onclick="openJobModal()">+ เพิ่มงานวันนี้</button></div><div class="card"><div class="filters"><input type="date" value="2026-09-18" id="dailyDate"><select id="dailyTeamFilter"><option value="">ทุกทีม</option><option value="HA1">HA1</option><option value="HA2">HA2</option><option value="HA3">HA3</option><option value="HA4">HA4</option></select><span class="pill blue">ศูนย์ระยอง</span></div><div class="table-wrap"><table><thead><tr><th>ทีม / ช่าง</th><th>ผู้ช่วย</th><th>พื้นที่วิ่งวันนี้</th><th>งาน</th><th>CAPA</th><th>สถานะ</th><th></th></tr></thead><tbody><tr><td><b>HA1</b><br><span class="muted">เต้ย</span></td><td>โบ้น</td><td>จันทบุรี + ตราด<br><span class="muted">เมืองจันทบุรี · เมืองตราด</span></td><td>6 งาน</td><td><span class="pill blue">รอบต่างจังหวัด</span></td><td><span class="pill blue">เดินทาง</span></td><td><button class="secondary" onclick="openJobModalForTeam('HA1')">+ งาน</button></td></tr><tr><td><b>HA2</b><br><span class="muted">เจมส์</span></td><td>ณุ</td><td>ระยอง<br><span class="muted">เมืองระยอง · บ้านฉาง</span></td><td>4 งาน</td><td><span class="pill green">4 / 5</span></td><td><span class="pill green">ว่าง 1</span></td><td><button class="secondary" onclick="openJobModalForTeam('HA2')">+ งาน</button></td></tr><tr><td><b>HA3</b><br><span class="muted">สอง</span></td><td>ไปรท์</td><td>ระยอง<br><span class="muted">นิคมพัฒนา · ปลวกแดง</span></td><td>5 งาน</td><td><span class="pill amber">5 / 5</span></td><td><span class="pill amber">เต็ม CAPA</span></td><td><button class="secondary" onclick="openJobModalForTeam('HA3')">+ งาน</button></td></tr><tr><td><b>HA4</b><br><span class="muted">นุ๊ก</span></td><td>เบิ้ล</td><td>ระยอง<br><span class="muted">แกลง · วังจันทร์</span></td><td>3 งาน</td><td><span class="pill green">3 / 5</span></td><td><span class="pill green">ว่าง 2</span></td><td><button class="secondary" onclick="openJobModalForTeam('HA4')">+ งาน</button></td></tr></tbody></table></div></div><div class="card" style="margin-top:16px"><div class="section-head"><div class="section-title">สรุปการจัดคิววันนี้</div><span class="section-note">อัปเดตจากงานที่จัดแล้ว</span></div><div class="grid kpis" style="margin:0;grid-template-columns:repeat(3,1fr)"><div><div class="kpi-label">ทีมที่เต็ม CAPA</div><div class="kpi-value" style="font-size:24px">1 ทีม</div></div><div><div class="kpi-label">ทีมยังรับงานได้</div><div class="kpi-value" style="font-size:24px">2 ทีม</div></div><div><div class="kpi-label">งานยังไม่จัดทีม</div><div class="kpi-value" style="font-size:24px;color:var(--amber)">2 งาน</div></div></div></div></section>
+
+  </main>
+</div>
+<div class="modal-backdrop" id="detailModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Job detail</div><div class="title" id="detailTitle" style="font-size:22px">รายละเอียดงาน</div><div class="subtitle" id="detailSubtitle">ข้อมูล JOB</div></div><button class="close" type="button" onclick="closeDetail()">×</button></div><div class="form-grid"><div class="field"><label>สถานะงาน</label><div id="detailStatus" class="pill blue">-</div></div><div class="field"><label>ทีม</label><div id="detailTeam" class="pill gray">-</div></div><div class="field"><label>นัดหมาย</label><div id="detailTime">-</div></div><div class="field"><label>พื้นที่</label><div id="detailArea">-</div></div><div class="field"><label>สินค้า / รุ่น</label><div id="detailProduct">-</div></div><div class="field"><label>หมายเหตุ</label><div id="detailNote">-</div></div></div><div class="modal-actions"><button type="button" class="secondary" onclick="closeDetail()">ปิด</button><button type="button" class="primary" onclick="showScreen('technician');closeDetail()">เปิดมุมมองช่าง</button></div></div></div>
+<script src="thai-geo-rayong-chan-trat.js"></script>
+<script src="september-rayong-jobs.js"></script>
+<script>
+  // Normalize repeated helper-name replacements from the legacy name migration layer.
+  (()=>{
+    const fix=()=>{const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(n=>{n.nodeValue=n.nodeValue.replace(/วิษวิษณุ\s+พิกุลแกม\s+พิกุลแกม/g,'วิษณุ พิกุลแกม').replace(/วิษณุ\s+วิษณุ\s+พิกุลแกม/g,'วิษณุ พิกุลแกม')})};
+    fix();new MutationObserver(fix).observe(document.body,{childList:true,subtree:true});
+  })();
+</script>
+<style>
+  /* Final motion QA: restore restrained entrance motion after screenshot-safe overrides. */
+  .screen.active .top{animation:qaHero .55s cubic-bezier(.22,.61,.36,1) both!important}.screen.active .card{animation:qaSurface .48s cubic-bezier(.22,.61,.36,1) both!important}.screen.active .card:nth-child(2){animation-delay:.05s!important}.screen.active .card:nth-child(3){animation-delay:.1s!important}
+  @keyframes qaHero{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes qaSurface{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){.screen.active .top,.screen.active .card{animation:none!important}}
+</style>
+<script>
+  const screens=[...document.querySelectorAll('.screen')];
+  function showScreen(id){screens.forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.screen===id));window.scrollTo({top:0,behavior:'smooth'})}
+  document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showScreen(b.dataset.screen)));
+  function filterJobs(q){document.querySelectorAll('#jobRows tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q.toLowerCase())?'':'none')}
+</script>
+<script>
+  const detailModal=document.getElementById('detailModal');
+  function closeDetail(){detailModal.classList.remove('open')}
+  function openDetailFromRow(row){const c=row.querySelectorAll('td');document.getElementById('detailTitle').textContent='JOB '+c[0].textContent.trim();document.getElementById('detailSubtitle').textContent='รายละเอียดงานจากศูนย์ระยอง';document.getElementById('detailTime').textContent=c[1].textContent.trim();document.getElementById('detailArea').textContent=c[2].innerText.trim().replace(/\n/g,' · ');document.getElementById('detailProduct').textContent=c[3].innerText.trim().replace(/\n/g,' · ');document.getElementById('detailTeam').textContent=c[4].textContent.trim();document.getElementById('detailStatus').textContent=c[5].innerText.trim();detailModal.classList.add('open')}
+  function bindDetailButtons(){document.querySelectorAll('#jobRows tr').forEach(row=>{const b=row.querySelector('button');if(b){b.removeAttribute('onclick');b.onclick=()=>openDetailFromRow(row)}})}
+  bindDetailButtons();
+  const jobRowsObserver=new MutationObserver(bindDetailButtons);jobRowsObserver.observe(document.getElementById('jobRows'),{childList:true});
+</script>
+<div class="modal-backdrop" id="jobModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Create job</div><div class="title" style="font-size:22px">เพิ่มงานใหม่</div><div class="subtitle">ข้อมูลตัวอย่างจะถูกเก็บไว้ในเครื่องนี้</div></div><button class="close" type="button" onclick="closeJobModal()">×</button></div><form id="jobForm"><div class="form-grid"><div class="field"><label>JOB *</label><input id="fJob" required placeholder="เช่น 4439440001"></div><div class="field"><label>เวลานัดหมาย</label><input id="fTime" type="time" value="09:00"></div><div class="field"><label>พื้นที่/อำเภอ *</label><input id="fArea" required placeholder="เช่น เมืองระยอง"></div><div class="field"><label>จังหวัด *</label><select id="fProvince"><option>ระยอง</option><option>จันทบุรี</option><option>ตราด</option></select></div><div class="field"><label>Product *</label><select id="fProduct"><option>RAC</option><option>REF</option><option>WM</option><option>TV</option><option>HA</option></select></div><div class="field"><label>Model</label><input id="fModel" placeholder="เช่น AR50H18D1CHNST"></div><div class="field"><label>ทีม</label><select id="fTeam"><option>ยังไม่จัดทีม</option><option>HA1</option><option>HA2</option><option>HA3</option><option>HA4</option></select></div><div class="field"><label>สถานะ</label><select id="fStatus"><option>เสนอราคา</option><option>รอตัดสินใจ</option><option>ยืนยันนัดหมาย</option><option>Goods Delivery</option><option>เลื่อนนัดหมาย</option></select></div><div class="field full"><label>อาการเสีย / หมายเหตุ</label><input id="fNote" placeholder="รายละเอียดสั้น ๆ"></div></div><div class="modal-actions"><button type="button" class="secondary" onclick="closeJobModal()">ยกเลิก</button><button class="primary" type="submit">บันทึกงาน</button></div></form></div></div>
+<script>
+  const modal=document.getElementById('jobModal');
+  function openJobModal(){modal.classList.add('open');document.getElementById('fJob').focus()}
+  function closeJobModal(){modal.classList.remove('open')}
+  function addJobRow(x){const tbody=document.getElementById('jobRows');if(!tbody)return;const cls={"เสนอราคา":"gray","รอตัดสินใจ":"amber","ยืนยันนัดหมาย":"blue","Goods Delivery":"green","เลื่อนนัดหมาย":"amber"}[x.status]||'gray';const tr=document.createElement('tr');tr.innerHTML=`<td class="job">${x.job}</td><td>${x.time||'-'}</td><td>${x.area}<br><span class="muted">${x.province}</span></td><td>${x.product}<br><span class="muted">${x.model||'-'}</span></td><td>${x.team}</td><td><span class="pill ${cls}">${x.status}</span></td><td><button class="secondary" type="button">ดู</button></td>`;tbody.prepend(tr)}
+  document.querySelectorAll('button').forEach(b=>{if(b.textContent.includes('+ เพิ่มงาน'))b.onclick=openJobModal});
+  document.getElementById('jobForm').addEventListener('submit',e=>{e.preventDefault();const x={job:fJob.value.trim(),time:fTime.value,area:fArea.value.trim(),province:fProvince.value,product:fProduct.value,model:fModel.value.trim(),team:fTeam.value,status:fStatus.value};if(!x.job||!x.area)return;if([...document.querySelectorAll('#jobRows .job')].some(c=>c.textContent===x.job)){alert('JOB นี้มีอยู่แล้ว');return}addJobRow(x);closeJobModal();e.target.reset();showScreen('jobs');alert('บันทึกงาน '+x.job+' แล้ว')});
+  document.querySelectorAll('.status-buttons button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.status-buttons button').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')}));
+</script>
+<script>
+  // Robust binding for local-file browsers: replace the prototype form handler with a direct DOM binding.
+  (()=>{
+    const m=document.getElementById('jobModal');
+    window.openJobModal=()=>{m.classList.add('open');document.getElementById('fJob').focus()};
+    window.closeJobModal=()=>m.classList.remove('open');
+    document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='+ เพิ่มงาน'){b.removeAttribute('onclick');b.addEventListener('click',window.openJobModal)}});
+    const oldForm=document.getElementById('jobForm');
+    const form=oldForm.cloneNode(true);oldForm.replaceWith(form);
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const val=id=>document.getElementById(id).value.trim();
+      const x={job:val('fJob'),time:val('fTime'),area:val('fArea'),province:val('fProvince'),product:val('fProduct'),model:val('fModel'),team:val('fTeam'),status:val('fStatus')};
+      if(!x.job||!x.area){alert('กรุณากรอก JOB และพื้นที่');return}
+      if([...document.querySelectorAll('#jobRows .job')].some(c=>c.textContent.trim()===x.job)){alert('JOB นี้มีอยู่แล้ว');return}
+      addJobRow(x);window.closeJobModal();form.reset();showScreen('jobs');alert('บันทึกงาน '+x.job+' แล้ว');
+    });
+  })();
+</script>
+<div class="modal-backdrop" id="routeModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Route planning</div><div class="title" style="font-size:22px">สร้างรอบวิ่งงาน</div><div class="subtitle">รอบมาตรฐาน 2 วัน · จันทบุรี + ตราด</div></div><button class="close" type="button" onclick="closeRouteModal()">×</button></div><form id="routeForm"><div class="form-grid"><div class="field"><label>วันที่ไป *</label><input id="rStart" type="date" value="2026-09-18" required></div><div class="field"><label>วันที่กลับ *</label><input id="rEnd" type="date" value="2026-09-19" required></div><div class="field"><label>ทีมหลัก *</label><select id="rTeam"><option>HA1 · เต้ย</option><option>HA2 · เจมส์</option><option>HA3 · สอง</option><option>HA4 · นุ๊ก</option></select></div><div class="field"><label>ผู้ช่วย *</label><select id="rHelper"><option>โบ้น</option><option>ณุ</option><option>ไปรท์</option><option>เบิ้ล</option></select></div><div class="field full"><label>พื้นที่วิ่ง</label><div class="pill blue">จันทบุรี + ตราด</div></div></div><div class="modal-actions"><button type="button" class="secondary" onclick="closeRouteModal()">ยกเลิก</button><button class="primary" type="submit">บันทึกรอบ</button></div></form></div></div>
+<script>
+  const routeModal=document.getElementById('routeModal');
+  function openRouteModal(){routeModal.classList.add('open')}
+  function closeRouteModal(){routeModal.classList.remove('open')}
+  document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='+ สร้างรอบ'){b.removeAttribute('onclick');b.addEventListener('click',openRouteModal)}});
+  document.getElementById('routeForm').addEventListener('submit',e=>{e.preventDefault();const start=document.getElementById('rStart').value;const end=document.getElementById('rEnd').value;const team=document.getElementById('rTeam').value;const helper=document.getElementById('rHelper').value;if(!start||!end){alert('กรุณาเลือกวันที่ไปและวันที่กลับ');return}const fmt=x=>{const [y,m,d]=String(x).split('-');return `${d}/${m}/${y}`};const card=document.querySelector('#routes .card');const row=document.createElement('div');row.className='route';row.innerHTML=`<div class="route-date">${fmt(start)}–${fmt(end)}</div><div class="route-line"></div><div class="route-main"><strong>${team} · จันทบุรี + ตราด</strong><small>ผู้ช่วย${helper} · รอบใหม่ · ค้างคืน 1 คืน</small></div><span class="pill blue">วางแผนแล้ว</span><button class="secondary" type="button">แก้ไข</button>`;card.appendChild(row);closeRouteModal();e.target.reset();alert('สร้างรอบ '+fmt(start)+'–'+fmt(end)+' แล้ว')});
+</script>
+<div class="modal-backdrop" id="assignModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Job assignment</div><div class="title" id="assignTitle" style="font-size:22px">จัดทีมและสถานะ</div><div class="subtitle">แก้ไขแล้วแสดงในรายการงานทันที</div></div><button class="close" type="button" onclick="closeAssign()">×</button></div><form id="assignForm"><div class="form-grid"><div class="field"><label>ทีม</label><select id="assignTeam"><option>ยังไม่จัดทีม</option><option>HA1</option><option>HA2</option><option>HA3</option><option>HA4</option></select></div><div class="field"><label>สถานะ</label><select id="assignStatus"><option>เสนอราคา</option><option>รอตัดสินใจ</option><option>ยืนยันนัดหมาย</option><option>Goods Delivery</option><option>เลื่อนนัดหมาย</option></select></div></div><div class="modal-actions"><button type="button" class="secondary" onclick="closeAssign()">ยกเลิก</button><button class="primary" type="submit">บันทึกการจัดงาน</button></div></form></div></div>
+<script>
+  const assignModal=document.getElementById('assignModal');let selectedJobRow=null;
+  function closeAssign(){assignModal.classList.remove('open')}
+  function openAssign(){if(!selectedJobRow)return;const c=selectedJobRow.querySelectorAll('td');document.getElementById('assignTitle').textContent='จัดทีม JOB '+c[0].textContent.trim();document.getElementById('assignTeam').value=c[4].textContent.trim();document.getElementById('assignStatus').value=c[5].innerText.trim();assignModal.classList.add('open')}
+  const detailActions=document.querySelector('#detailModal .modal-actions');if(detailActions&&!detailActions.querySelector('.assign-button')){const b=document.createElement('button');b.className='secondary assign-button';b.type='button';b.textContent='จัดทีม/สถานะ';b.onclick=()=>{const job=document.getElementById('detailTitle').textContent.replace('JOB ','').trim();selectedJobRow=[...document.querySelectorAll('#jobRows tr')].find(r=>r.querySelector('.job')?.textContent.trim()===job);closeDetail();openAssign()};detailActions.insertBefore(b,detailActions.firstChild)}
+  document.getElementById('assignForm').addEventListener('submit',e=>{e.preventDefault();if(!selectedJobRow)return;const c=selectedJobRow.querySelectorAll('td');const team=document.getElementById('assignTeam').value;const status=document.getElementById('assignStatus').value;const cls={"เสนอราคา":"gray","รอตัดสินใจ":"amber","ยืนยันนัดหมาย":"blue","Goods Delivery":"green","เลื่อนนัดหมาย":"amber"}[status]||'gray';c[4].textContent=team;c[5].innerHTML=`<span class="pill ${cls}">${status}</span>`;closeAssign();alert('อัปเดตทีมและสถานะแล้ว')});
+</script>
+<script>
+  // Expand the create-job form to match the operational columns from the source sheet.
+  (()=>{
+    const form=document.getElementById('jobForm');if(!form)return;
+    const grid=form.querySelector('.form-grid');const anchor=document.getElementById('fNote')?.closest('.field');
+    const fields=[
+      {id:'fDate',label:'วันที่นัดลูกค้า',type:'date',value:'2026-09-18'},
+      {id:'fSthings',label:'S.Things',type:'select',options:['','YES','NO']},
+      {id:'fConnect',label:'Connect',type:'select',options:['','YES','NO']},
+      {id:'fType',label:'TYPE',type:'select',options:['IH','OH','CI','Goods Delivery']},
+      {id:'fWty',label:'WTY',type:'select',options:['LP','OW','IW','อื่น ๆ']},
+      {id:'fDetail',label:'รายละเอียดงาน',type:'textarea',full:true,placeholder:'รายละเอียดงานที่ต้องดำเนินการ'},
+      {id:'fAddress',label:'ที่อยู่ ADDRESS',type:'textarea',full:true,placeholder:'บ้านเลขที่ หมู่ ถนน ตำบล'},
+      {id:'fCustomerNote',label:'CUSTOMER NOTED',type:'textarea',full:true,placeholder:'ข้อจำกัดหรือหมายเหตุจากลูกค้า'},
+      {id:'fCustomer',label:'NAME + TEL.',type:'text',placeholder:'ชื่อลูกค้าและเบอร์โทร'},
+      {id:'fAddPart',label:'ADD PART',type:'text',placeholder:'อะไหล่ที่ต้องเพิ่ม'},
+      {id:'fReview',label:'REVIEW',type:'select',options:['','YES','NO','รอตรวจสอบ']},
+      {id:'fPartStatus',label:'PART STATUS',type:'select',options:['','ไม่มีอะไหล่','รอสั่งอะไหล่','อะไหล่พร้อม','ไม่ใช้อะไหล่']},
+      {id:'fStatusUpdate',label:'STATUS UPDATE',type:'text',placeholder:'เช่น GOOD / WAIT PART'},
+      {id:'fMGspn',label:'M-Gspn',type:'text',placeholder:'รหัส M-Gspn'}
+    ];
+    fields.forEach(f=>{if(document.getElementById(f.id))return;const wrap=document.createElement('div');wrap.className='field'+(f.full?' full':'');const label=document.createElement('label');label.textContent=f.label;wrap.appendChild(label);let el;if(f.type==='textarea'){el=document.createElement('textarea');el.rows=2;el.style.cssText='border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical;color:var(--ink);font:inherit';}else if(f.type==='select'){el=document.createElement('select');f.options.forEach(o=>{const opt=document.createElement('option');opt.value=o;opt.textContent=o||'ไม่ระบุ';el.appendChild(opt)})}else{el=document.createElement('input');el.type=f.type; if(f.value)el.value=f.value}el.id=f.id;if(f.placeholder)el.placeholder=f.placeholder;wrap.appendChild(el);grid.insertBefore(wrap,anchor)});
+    const fresh=form.cloneNode(true);form.replaceWith(fresh);
+    fresh.addEventListener('submit',e=>{e.preventDefault();const val=id=>document.getElementById(id)?.value?.trim()||'';const x={job:val('fJob'),date:val('fDate'),time:val('fTime'),area:val('fArea'),province:val('fProvince'),product:val('fProduct'),model:val('fModel'),sthings:val('fSthings'),connect:val('fConnect'),type:val('fType'),wty:val('fWty'),symptom:val('fNote'),detail:val('fDetail'),address:val('fAddress'),customerNote:val('fCustomerNote'),customer:val('fCustomer'),addPart:val('fAddPart'),review:val('fReview'),partStatus:val('fPartStatus'),statusUpdate:val('fStatusUpdate'),mGspn:val('fMGspn'),team:val('fTeam'),status:val('fStatus')};if(!x.job||!x.area){alert('กรุณากรอก JOB และพื้นที่/อำเภอ');return}if([...document.querySelectorAll('#jobRows .job')].some(c=>c.textContent.trim()===x.job)){alert('JOB นี้มีอยู่แล้ว');return}localStorage.setItem('job_'+x.job,JSON.stringify(x));addJobRow(x);closeJobModal();fresh.reset();showScreen('jobs');alert('บันทึกงาน '+x.job+' แล้ว')});
+  })();
+</script>
+<script>document.querySelectorAll('.modal').forEach(m=>{m.style.maxHeight='90vh';m.style.overflowY='auto'});</script>
+<script>
+  // Cascading address selector: only Rayong, Chanthaburi and Trat for this service area.
+  (()=>{
+    const form=document.getElementById('jobForm');if(!form||!window.THAI_GEO)return;
+    const area=document.getElementById('fArea');const province=document.getElementById('fProvince');const address=document.getElementById('fAddress');if(!area||!province||!address)return;
+    const areaWrap=area.closest('.field');const addressWrap=address.closest('.field');
+    addressWrap.querySelector('label').textContent='ที่อยู่ ADDRESS';addressWrap.classList.add('full');addressWrap.querySelector('textarea')?.setAttribute('placeholder','บ้านเลขที่ หมู่ ถนน ตำบล');
+    const subWrap=document.createElement('div');subWrap.className='field';const subLabel=document.createElement('label');subLabel.textContent='ตำบล *';const sub=document.createElement('select');sub.id='fSubdistrict';sub.innerHTML='<option value="">เลือกตำบล</option>'+window.THAI_GEO.map(x=>`<option value="${x.subdistrict}" data-district="${x.district}" data-province="${x.province}" data-postal="${x.postal}">${x.subdistrict}</option>`).join('');subWrap.append(labelFix(subLabel),sub);areaWrap.parentNode.insertBefore(subWrap,areaWrap);areaWrap.querySelector('label').textContent='อำเภอ *';
+    function labelFix(x){return x}
+    const newArea=document.createElement('select');newArea.id='fArea';newArea.required=true;newArea.innerHTML='<option value="">ระบบจะเติมอำเภอ</option>';area.replaceWith(newArea);
+    areaWrap.querySelector('label').textContent='อำเภอ *';
+    province.disabled=true;province.style.background='#f5f7fa';newArea.disabled=true;newArea.style.background='#f5f7fa';
+    sub.addEventListener('change',()=>{const o=sub.options[sub.selectedIndex];newArea.innerHTML=o.dataset.district?`<option value="${o.dataset.district}">${o.dataset.district}</option>`:'<option value="">ระบบจะเติมอำเภอ</option>';province.value=o.dataset.province||'ระยอง';});
+    const first=window.THAI_GEO[0];if(first){sub.value=first.subdistrict;sub.dispatchEvent(new Event('change'))}
+  })();
+</script>
+<script>
+  (()=>{
+    const sub=document.getElementById('fSubdistrict'),area=document.getElementById('fArea'),province=document.getElementById('fProvince');if(!sub||!area||!province)return;
+    let postal=document.getElementById('fPostal');
+    if(!postal){const wrap=document.createElement('div');wrap.className='field';const label=document.createElement('label');label.textContent='รหัสไปรษณีย์';postal=document.createElement('input');postal.id='fPostal';postal.readOnly=true;postal.placeholder='ระบบจะเติมอัตโนมัติ';postal.style.background='#f5f7fa';wrap.append(label,postal);const provinceWrap=province.closest('.field');provinceWrap.parentNode.insertBefore(wrap,provinceWrap.nextSibling)}
+    sub.value='';area.innerHTML='<option value="">ระบบจะเติมอำเภอ</option>';province.value='';postal.value='';
+    sub.addEventListener('change',()=>{const o=sub.options[sub.selectedIndex];area.innerHTML=o.dataset.district?`<option value="${o.dataset.district}">${o.dataset.district}</option>`:'<option value="">ระบบจะเติมอำเภอ</option>';province.value=o.dataset.province||'';postal.value=o.dataset.postal||''});
+  })();
+</script>
+<script>
+  (()=>{
+    const modal=document.querySelector('#detailModal .modal');const actions=modal?.querySelector('.modal-actions');if(!modal||!actions)return;
+    let extra=document.getElementById('detailExtra');if(!extra){extra=document.createElement('div');extra.id='detailExtra';extra.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 4px;padding-top:16px;border-top:1px solid var(--line)';actions.before(extra)}
+    const labels={date:'วันที่นัดลูกค้า',time:'เวลานัดหมาย',product:'PRODUCT',model:'MODEL',sthings:'S.Things',connect:'Connect',area:'อำเภอ',province:'จังหวัด',subdistrict:'ตำบล',postal:'รหัสไปรษณีย์',type:'TYPE',wty:'WTY',symptom:'อาการเสีย',detail:'รายละเอียดงาน',address:'ที่อยู่ ADDRESS',customerNote:'CUSTOMER NOTED',customer:'NAME + TEL.',addPart:'ADD PART',review:'REVIEW',partStatus:'PART STATUS',statusUpdate:'STATUS UPDATE',mGspn:'M-Gspn',team:'ทีม',status:'สถานะ'};
+    const val=(k,v)=>`<div><div style="font-size:11px;color:var(--muted);font-weight:800">${labels[k]||k}</div><div style="font-size:13px;margin-top:3px;white-space:pre-wrap">${v||'-'}</div></div>`;
+    function openFullDetail(row){openDetailFromRow(row);const job=row.querySelector('.job')?.textContent.trim();const stored=JSON.parse(localStorage.getItem('job_'+job)||'null')||{};const c=row.querySelectorAll('td');const x=Object.assign({job,date:'',time:c[1]?.textContent.trim(),area:c[2]?.innerText.trim(),product:c[3]?.innerText.trim(),team:c[4]?.textContent.trim(),status:c[5]?.innerText.trim()},stored);extra.innerHTML=Object.keys(labels).map(k=>val(k,x[k])).join('')}
+    function bindFull(){document.querySelectorAll('#jobRows tr').forEach(row=>{const b=row.querySelector('button');if(b)b.onclick=()=>openFullDetail(row)})}
+    bindFull();const obs=new MutationObserver(bindFull);const rows=document.getElementById('jobRows');if(rows)obs.observe(rows,{childList:true});
+  })();
+</script>
+<script>
+  (()=>{
+    const form=document.getElementById('jobForm');const sub=document.getElementById('fSubdistrict');if(!form||!sub)return;
+    // Replace the long select with a type-to-search input and native datalist.
+    const subWrap=sub.closest('.field');const input=document.createElement('input');input.id='fSubdistrict';input.setAttribute('list','thaiSubdistrictList');input.placeholder='พิมพ์ชื่อตำบลเพื่อค้นหา';input.autocomplete='off';const list=document.createElement('datalist');list.id='thaiSubdistrictList';list.innerHTML=window.THAI_GEO.map(x=>`<option value="${x.subdistrict}">${x.district} · ${x.province}</option>`).join('');subWrap.replaceChild(input,sub);subWrap.appendChild(list);
+    const area=document.getElementById('fArea'),province=document.getElementById('fProvince'),postal=document.getElementById('fPostal');input.addEventListener('input',()=>{const x=window.THAI_GEO.find(r=>r.subdistrict===input.value.trim());if(x){area.innerHTML=`<option value="${x.district}">${x.district}</option>`;province.value=x.province;if(postal)postal.value=x.postal}else{area.innerHTML='<option value="">พิมพ์ตำบลให้ตรงกับรายการ</option>';province.value='';if(postal)postal.value=''}});
+    // Split customer name and telephone into separate fields.
+    const oldCustomer=document.getElementById('fCustomer');if(oldCustomer){const oldWrap=oldCustomer.closest('.field');const make=(id,label,placeholder,type='text')=>{const w=document.createElement('div');w.className='field';const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.id=id;i.type=type;i.placeholder=placeholder;w.append(l,i);return w};const nameWrap=make('fCustomerName','ชื่อลูกค้า','เช่น คุณสมชาย');const telWrap=make('fCustomerTel','เบอร์โทรลูกค้า','เช่น 0812345678','tel');oldWrap.replaceWith(nameWrap,telWrap)}
+    const fresh=form.cloneNode(true);form.replaceWith(fresh);fresh.addEventListener('submit',e=>{e.preventDefault();const val=id=>document.getElementById(id)?.value?.trim()||'';const x={job:val('fJob'),date:val('fDate'),time:val('fTime'),subdistrict:val('fSubdistrict'),area:val('fArea'),province:val('fProvince'),postal:val('fPostal'),product:val('fProduct'),model:val('fModel'),sthings:val('fSthings'),connect:val('fConnect'),type:val('fType'),wty:val('fWty'),symptom:val('fNote'),detail:val('fDetail'),address:val('fAddress'),customerNote:val('fCustomerNote'),customerName:val('fCustomerName'),customerTel:val('fCustomerTel'),customer:(val('fCustomerName')+' '+val('fCustomerTel')).trim(),addPart:val('fAddPart'),review:val('fReview'),partStatus:val('fPartStatus'),statusUpdate:val('fStatusUpdate'),mGspn:val('fMGspn'),team:val('fTeam'),status:val('fStatus')};if(!x.job||!x.subdistrict){alert('กรุณากรอก JOB และเลือกตำบลจากรายการ');return}if([...document.querySelectorAll('#jobRows .job')].some(c=>c.textContent.trim()===x.job)){alert('JOB นี้มีอยู่แล้ว');return}localStorage.setItem('job_'+x.job,JSON.stringify(x));addJobRow(x);closeJobModal();fresh.reset();showScreen('jobs');alert('บันทึกงาน '+x.job+' แล้ว')});
+  })();
+</script>
+<script>
+  // Rebind after the form is cloned so typing a subdistrict always updates its parents.
+  (()=>{const sub=document.getElementById('fSubdistrict'),area=document.getElementById('fArea'),province=document.getElementById('fProvince'),postal=document.getElementById('fPostal');if(!sub||!area||!province)return;const apply=()=>{const term=sub.value.trim().replace(/^ต\.?\s*/,'');const x=window.THAI_GEO.find(r=>r.subdistrict===term)||window.THAI_GEO.find(r=>r.subdistrict.includes(term)&&term.length>=2);if(!x){area.innerHTML='<option value="">ระบบจะเติมอำเภอ</option>';province.value='';if(postal)postal.value='';return}area.innerHTML=`<option value="${x.district}">${x.district}</option>`;province.value=x.province;if(postal)postal.value=x.postal};sub.addEventListener('input',apply);sub.addEventListener('change',apply)})();
+</script>
+<script>
+  function openJobModalForTeam(team){openJobModal();const select=document.getElementById('fTeam');if(select)select.value=team;const d=document.getElementById('fDate');const daily=document.getElementById('dailyDate');if(d&&daily)d.value=daily.value}
+</script>
+<script>
+  (()=>{
+    const date=document.getElementById('dailyDate'),body=document.querySelector('#daily tbody');if(!date||!body)return;
+    const teams=[['HA1','เฉลิมชัย อุกกระวงศ์','กันณพงค์ กุลวัฒน์นันท์'],['HA2','ธนายุทธ พิมพิลา','วิษณุ พิกุลแกม'],['HA3','ธนวัฒน์ เถาวัลย์','ขวัญ พรมมา'],['HA4','กฤษณล พุมลาวงศ์','อภิรัตน์ แพรศรี']];
+    const districts=[['เมืองระยอง','บ้านฉาง'],['นิคมพัฒนา','ปลวกแดง'],['แกลง','วังจันทร์']];
+    const base=Date.UTC(2026,8,18);
+    function renderDaily(){const d=new Date(date.value+'T00:00:00');const diff=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-base)/86400000);const routeIndex=((Math.floor(diff/2)%4)+4)%4;const overrides=JSON.parse(localStorage.getItem('dailyRouteOverrides')||'{}');const extras=JSON.parse(localStorage.getItem('dailyExtraRouteTeams')||'{}')[date.value]||[];const overrideTeam=overrides[date.value];const noOutRoute=!!overrideTeam&&!extras.length;const activeRouteIndex=overrideTeam?teams.findIndex(t=>t[0]===overrideTeam):routeIndex;const order=noOutRoute?teams.map((_,i)=>i):[activeRouteIndex,...teams.map((_,i)=>i).filter(i=>i!==activeRouteIndex)];[...body.querySelectorAll('tr')].forEach((row,pos)=>{const idx=order[pos],t=teams[idx],cells=row.querySelectorAll('td'),route=(!overrideTeam&&pos===0)||extras.includes(t[0]);cells[0].innerHTML=`<b>${t[0]}</b><br><span class="muted">${t[1]}</span>`;cells[1].textContent=t[2];if(route){cells[2].innerHTML='<span class="pill blue">จันทบุรี + ตราด</span><br><span class="muted">เมืองจันทบุรี · เมืองตราด</span>';cells[3].textContent='0 งาน';cells[4].innerHTML='<span class="pill green">0 / 5</span>';cells[5].innerHTML='<span class="pill green">ว่าง 5</span>'}else{const n=pos===1?4:pos===2?5:3;const free=5-n;cells[2].innerHTML=`ระยอง<br><span class="muted">${districts[(idx+diff+10)%districts.length].join(' · ')}</span>`;cells[3].textContent=n+' งาน';cells[4].innerHTML=`<span class="pill ${free===0?'amber':'green'}">${n} / 5</span>`;cells[5].innerHTML=`<span class="pill ${free===0?'amber':'green'}">${free===0?'เต็ม CAPA':'ว่าง '+free}</span>`}cells[6].querySelector('button')?.setAttribute('onclick',`openJobModalForTeam('${t[0]}')`)});window.dailySelectedDate=date.value}
+    date.addEventListener('change',renderDaily);renderDaily();
+  })();
+</script>
+<script>
+  (()=>{
+    const data=window.MONTH_JOBS||[];const body=document.getElementById('jobRows');if(!data.length||!body)return;
+    const esc=s=>String(s||'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+    const normalize=x=>{const parts=(x.areaRaw||'').split('-');const district=(parts[0]||'').trim();const province=(parts[1]||parts[0]||'').trim();const tm=(x.engineer||'').match(/HA ?&? ?AV|HA[1-4]|TEAM ?([1-4])/i);const team=(x.engineer||'').match(/TEAM ?([1-4])/i)?.[1]?`HA${(x.engineer||'').match(/TEAM ?([1-4])/i)[1]}`:((x.engineer||'').match(/HA[1-4]/i)?.[0]||'ยังไม่จัดทีม');const s=x.statusUpdate||'';const status=/WAIT|รอ/i.test(s)?'รอตัดสินใจ':/GOOD|RC|ปิด|เทส/i.test(s)?'Goods Delivery':'ยืนยันนัดหมาย';return {...x,job:String(x.job).replace(/\.0$/,''),district,province,area:district+(province&&province!==district?' · '+province:''),team,status,time:x.appointment||'-'}};
+    const rows=data.map(normalize);body.innerHTML=rows.map(x=>{const cls={"เสนอราคา":"gray","รอตัดสินใจ":"amber","ยืนยันนัดหมาย":"blue","Goods Delivery":"green","เลื่อนนัดหมาย":"amber"}[x.status]||'gray';if(!localStorage.getItem('job_'+x.job))localStorage.setItem('job_'+x.job,JSON.stringify(x));return `<tr><td class="job">${esc(x.job)}</td><td>${esc(x.date)}<br><span class="muted">${esc(x.time)}</span></td><td>${esc(x.area)}</td><td>${esc(x.product)}<br><span class="muted">${esc(x.model)}</span></td><td>${esc(x.team)}</td><td><span class="pill ${cls}">${esc(x.status)}</span></td><td><button class="secondary" type="button">ดู</button></td></tr>`}).join('');const sub=document.querySelector('#jobs .subtitle');if(sub)sub.textContent=`งานจาก Google Sheet เดือนกันยายน 2026 · นำเข้า ${rows.length} งาน`;
+  })();
+</script>
+<div class="modal-backdrop" id="dailyJobsModal" role="dialog" aria-modal="true"><div class="modal" style="width:min(900px,100%)"><div class="modal-head"><div><div class="eyebrow">Daily jobs</div><div class="title" id="dailyJobsTitle" style="font-size:22px">รายการงาน</div><div class="subtitle" id="dailyJobsSubtitle">ตรวจสอบกับข้อมูลที่นำเข้า</div></div><button class="close" type="button" onclick="closeDailyJobs()">×</button></div><div class="table-wrap"><table><thead><tr><th>JOB</th><th>สินค้า / รุ่น</th><th>พื้นที่</th><th>ลูกค้า</th><th>สถานะเดิม</th></tr></thead><tbody id="dailyJobsRows"></tbody></table></div><div class="modal-actions"><button type="button" class="secondary" onclick="closeDailyJobs()">ปิด</button></div></div></div>
+<script>
+  (()=>{
+    const dailyBody=document.querySelector('#daily tbody'),dailyDate=document.getElementById('dailyDate'),data=window.MONTH_JOBS||[];if(!dailyBody||!dailyDate)return;
+    const normalizeTeam=e=>{const m=String(e||'').match(/(?:TEAM|HA\s*&?\s*AV|HA)\s*([1-4])/i);return m?'HA'+m[1]:'ยังไม่จัดทีม'};
+    const teamOf=e=>normalizeTeam(e);
+    const info=x=>{const p=(x.areaRaw||'').split('-');return {district:(p[0]||'').trim(),province:(p[1]||p[0]||'').trim()}};
+    function actual(team,date){const key=normalizeTeam(team);return data.filter(x=>x.date===date&&teamOf(x.engineer)===key)}
+    function openDailyJobs(team){const date=dailyDate.value;const jobs=actual(team,date);document.getElementById('dailyJobsTitle').textContent=`${team} · งานวันที่ ${date}`;document.getElementById('dailyJobsSubtitle').textContent=`พบ ${jobs.length} งานจากข้อมูลเดือนกันยายน 2026`;const body=document.getElementById('dailyJobsRows');body.innerHTML=jobs.length?jobs.map(x=>{const a=info(x);return `<tr><td class="job">${x.job}</td><td>${x.product||'-'}<br><span class="muted">${x.model||'-'}</span></td><td>${a.district}${a.province&&a.province!==a.district?' · '+a.province:''}</td><td>${x.customer||'-'}</td><td>${x.statusUpdate||'-'}</td></tr>`}).join(''):'<tr><td colspan="5" class="empty">ไม่พบงานของทีมนี้ในวันที่เลือก</td></tr>';document.getElementById('dailyJobsModal').classList.add('open')}
+    function closeDailyJobs(){document.getElementById('dailyJobsModal').classList.remove('open')}window.closeDailyJobs=closeDailyJobs;
+    function bindDaily(){dailyBody.querySelectorAll('tr').forEach(row=>{const team=row.querySelector('td b')?.textContent.trim();if(!team)return;const cells=row.querySelectorAll('td');const jobs=actual(team,dailyDate.value);const areas=[...new Set(jobs.map(x=>{const a=info(x);return a.district+(a.province&&a.province!==a.district?' · '+a.province:'')}))];const route=cells[2].innerText.includes('จันทบุรี')||cells[2].innerText.includes('ตราด');if(areas.length)cells[2].innerHTML=`${route?'<span class="pill blue">':''}${areas.slice(0,2).join(' · ')}${areas.length>2?' · …':''}${route?'</span>':''}<br><span class="muted">ข้อมูลจาก Sheet</span>`;cells[3].textContent=jobs.length+' งาน';const cap=5,full=jobs.length>=cap;cells[4].innerHTML=`<span class="pill ${full?'amber':'green'}">${jobs.length} / ${cap}</span>`;cells[5].innerHTML=`<span class="pill ${full?'amber':'green'}">${full?'เต็ม CAPA':'ว่าง '+(cap-jobs.length)}</span>`;let view=row.querySelector('.view-daily');if(!view){view=document.createElement('button');view.className='secondary view-daily';view.type='button';view.textContent='ดูงาน';row.querySelector('td:last-child').prepend(view)}view.onclick=()=>openDailyJobs(team);let switcher=row.querySelector('.route-switch');if(route&&jobs.length===0){if(!switcher){switcher=document.createElement('button');switcher.className='secondary route-switch action-icon';switcher.type='button';switcher.innerHTML='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M4 17 C18 17 23 43 39 43 H49" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M4 47 C18 47 23 21 39 21 H49" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M45 34 L61 43 L45 52 Z" fill="currentColor"/><path d="M45 12 L61 21 L45 30 Z" fill="currentColor"/></svg>';switcher.title='ปรับทีมนี้กลับไปวิ่งงานระยอง';switcher.setAttribute('aria-label',switcher.title);row.querySelector('td:last-child').append(switcher)}switcher.onclick=()=>{const all=JSON.parse(localStorage.getItem('dailyRouteOverrides')||'{}');all[dailyDate.value]=team;localStorage.setItem('dailyRouteOverrides',JSON.stringify(all));const extra=JSON.parse(localStorage.getItem('dailyExtraRouteTeams')||'{}');extra[dailyDate.value]=(extra[dailyDate.value]||[]).filter(t=>t!==team);localStorage.setItem('dailyExtraRouteTeams',JSON.stringify(extra));dailyDate.dispatchEvent(new Event('change'));alert(team+' ปรับไปวิ่งงานระยองแล้ว')}}else if(switcher)switcher.remove()})}
+    dailyDate.addEventListener('change',()=>setTimeout(bindDaily,0));setTimeout(bindDaily,0);
+  })();
+</script>
+<script>
+  (()=>{const body=document.querySelector('#daily tbody'),date=document.getElementById('dailyDate');if(!body)return;function sortTeams(){const rows=[...body.querySelectorAll('tr')];rows.sort((a,b)=>{const n=r=>Number((r.querySelector('td b')?.textContent.match(/(\\d+)/)||['',99])[1]);return n(a)-n(b)});rows.forEach(r=>{const b=r.querySelector('td b');const n=(b?.textContent.match(/(\\d+)/)||['',''])[1];if(b&&n){const name=b.parentElement.querySelector('.muted')?.textContent||'';b.textContent='HA & AV '+n;b.parentElement.innerHTML=`<b>HA & AV ${n}</b><br><span class="muted">${name}</span>`}body.appendChild(r)})}setTimeout(sortTeams,80);date?.addEventListener('change',()=>setTimeout(sortTeams,120))})();
+</script>
+<script>
+  (()=>{const body=document.querySelector('#daily tbody'),date=document.getElementById('dailyDate');if(!body)return;const teamNumber=row=>Number((row.querySelector('td b')?.textContent||'').replace(/[^0-9]/g,''))||99;function forceTeamOrder(){[...body.querySelectorAll('tr')].sort((a,b)=>teamNumber(a)-teamNumber(b)).forEach(row=>body.appendChild(row))}setTimeout(forceTeamOrder,200);date?.addEventListener('change',()=>setTimeout(forceTeamOrder,250))})();
+</script>
+<div class="modal-backdrop" id="transferModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Transfer job</div><div class="title" id="transferTitle" style="font-size:22px">โอนงาน</div><div class="subtitle">เลือกทีมและวันที่นัดหมายใหม่</div></div><button class="close" type="button" onclick="closeTransfer()">×</button></div><form id="transferForm"><div class="form-grid"><div class="field"><label>วันที่ใหม่ *</label><input id="transferDate" type="date" required></div><div class="field"><label>ทีมปลายทาง *</label><select id="transferTeam"><option>HA1</option><option>HA2</option><option>HA3</option><option>HA4</option></select></div></div><div class="notice" style="margin-top:14px">ระบบจะบันทึกประวัติการโอนงาน และนำงานออกจากทีม/วันที่เดิม</div><div class="modal-actions"><button type="button" class="secondary" onclick="closeTransfer()">ยกเลิก</button><button class="primary" type="submit">ยืนยันการโอนงาน</button></div></form></div></div>
+<script>
+  (()=>{
+    const modal=document.getElementById('transferModal'),rows=document.getElementById('dailyJobsRows'),data=window.MONTH_JOBS||[];let selected=null;
+    const saved=JSON.parse(localStorage.getItem('jobTransfers')||'{}');data.forEach(x=>{const t=saved[String(x.job)];if(t){x.date=t.date;x.engineer='TEAM '+String(t.team).replace(/[^0-9]/g,'')}});
+    function closeTransfer(){modal.classList.remove('open')}window.closeTransfer=closeTransfer;
+    function openTransfer(job){selected=data.find(x=>String(x.job)===String(job));if(!selected)return;document.getElementById('transferTitle').textContent='โอนงาน JOB '+selected.job;document.getElementById('transferDate').value=selected.date;document.getElementById('transferTeam').value=(selected.engineer.match(/TEAM ?([1-4])/i)||[])[1]?`HA${selected.engineer.match(/TEAM ?([1-4])/i)[1]}`:'HA1';modal.classList.add('open')}
+    function addButtons(){if(!rows)return;const head=document.querySelector('#dailyJobsModal thead tr');if(head&&!head.querySelector('.transfer-head')){const th=document.createElement('th');th.className='transfer-head';th.textContent='การจัดการ';head.appendChild(th)}rows.querySelectorAll('tr').forEach(row=>{if(row.querySelector('.transfer-job'))return;const job=row.querySelector('.job')?.textContent.trim();if(!job)return;const td=document.createElement('td');const b=document.createElement('button');b.className='secondary transfer-job';b.type='button';b.textContent='โอนงาน';b.onclick=()=>openTransfer(job);td.appendChild(b);row.appendChild(td)})}
+    if(rows){new MutationObserver(()=>setTimeout(addButtons,0)).observe(rows,{childList:true});setTimeout(addButtons,50)}
+    document.getElementById('transferForm').addEventListener('submit',e=>{e.preventDefault();if(!selected)return;const date=document.getElementById('transferDate').value,team=document.getElementById('transferTeam').value;if(!date)return;const all=JSON.parse(localStorage.getItem('jobTransfers')||'{}');all[String(selected.job)]={date,team};localStorage.setItem('jobTransfers',JSON.stringify(all));selected.date=date;selected.engineer='TEAM '+team.replace(/[^0-9]/g,'');closeTransfer();document.getElementById('dailyDate').dispatchEvent(new Event('change'));alert('โอนงาน '+selected.job+' ไป '+team+' วันที่ '+date+' แล้ว')});
+  })();
+</script>
+<script>
+  // Job creation is intentionally available only from the daily technician schedule.
+  document.querySelectorAll('button').forEach(b=>{const t=b.textContent.trim();if((t==='+ เพิ่มงาน'||t==='+ เพิ่มงานวันนี้')&&!b.closest('#daily'))b.remove()});
+</script>
+<script>
+  (()=>{const body=document.querySelector('#daily tbody');if(!body)return;function bindRows(){body.querySelectorAll('tr').forEach(row=>{const view=row.querySelector('.view-daily');if(!view)return;view.style.display='none';row.style.cursor='pointer';row.title='คลิกเพื่อดูรายการงานของทีมนี้';row.onclick=e=>{if(e.target.closest('button'))return;view.click()}})}bindRows();new MutationObserver(()=>setTimeout(bindRows,0)).observe(body,{childList:true})})();
+</script>
+<script>
+  (()=>{
+    const modal=document.getElementById('jobModal'),title=modal?.querySelector('.title'),eyebrow=modal?.querySelector('.eyebrow'),oldForm=document.getElementById('jobForm'),data=window.MONTH_JOBS||[];if(!modal||!oldForm)return;let editingJob=null;
+    const form=oldForm.cloneNode(true);oldForm.replaceWith(form);
+    const val=id=>document.getElementById(id)?.value?.trim()||'';const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||''};
+    function resetNew(){editingJob=null;form.reset();const job=document.getElementById('fJob');if(job)job.readOnly=false;if(eyebrow)eyebrow.textContent='CREATE JOB';if(title)title.textContent='เพิ่มงานใหม่'}
+    function openEditJob(job){const x=JSON.parse(localStorage.getItem('job_'+job)||'null')||data.find(r=>String(r.job)===String(job));if(!x)return;editingJob=String(job);if(eyebrow)eyebrow.textContent='EDIT JOB';if(title)title.textContent='แก้ไขงาน '+job;set('fJob',x.job);const id=document.getElementById('fJob');if(id)id.readOnly=true;set('fDate',x.date);set('fTime',x.time);set('fSubdistrict',x.subdistrict);set('fArea',x.area||x.district);set('fProvince',x.province);set('fPostal',x.postal);set('fProduct',x.product);set('fModel',x.model);set('fSthings',x.sthings);set('fConnect',x.connect);set('fType',x.type);set('fWty',x.wty);set('fNote',x.symptom);set('fDetail',x.detail);set('fAddress',x.address);set('fCustomerNote',x.customerNote);set('fCustomerName',x.customerName||x.customer);set('fCustomerTel',x.customerTel);set('fAddPart',x.addPart);set('fReview',x.review);set('fPartStatus',x.partStatus);set('fStatusUpdate',x.statusUpdate);set('fMGspn',x.mGspn);set('fTeam',x.team);set('fStatus',x.status);modal.classList.add('open')}
+    window.openEditJob=openEditJob;
+    form.addEventListener('submit',e=>{e.preventDefault();const x={job:val('fJob'),date:val('fDate'),time:val('fTime'),subdistrict:val('fSubdistrict'),area:val('fArea'),province:val('fProvince'),postal:val('fPostal'),product:val('fProduct'),model:val('fModel'),sthings:val('fSthings'),connect:val('fConnect'),type:val('fType'),wty:val('fWty'),symptom:val('fNote'),detail:val('fDetail'),address:val('fAddress'),customerNote:val('fCustomerNote'),customerName:val('fCustomerName'),customerTel:val('fCustomerTel'),customer:(val('fCustomerName')+' '+val('fCustomerTel')).trim(),addPart:val('fAddPart'),review:val('fReview'),partStatus:val('fPartStatus'),statusUpdate:val('fStatusUpdate'),mGspn:val('fMGspn'),team:val('fTeam'),status:val('fStatus')};if(!x.job||!x.subdistrict){alert('กรุณากรอก JOB และเลือกตำบลจากรายการ');return}localStorage.setItem('job_'+x.job,JSON.stringify(x));const found=data.find(r=>String(r.job)===String(x.job));if(found)Object.assign(found,x);else if(!editingJob)addJobRow(x);modal.classList.remove('open');editingJob=null;alert('บันทึกการแก้ไขงาน '+x.job+' แล้ว');document.getElementById('dailyDate')?.dispatchEvent(new Event('change'))});
+    const jobRows=document.getElementById('dailyJobsRows');function bindEditRows(){jobRows?.querySelectorAll('tr').forEach(row=>{if(row.dataset.editBound)return;const job=row.querySelector('.job')?.textContent.trim();if(!job)return;row.dataset.editBound='1';row.style.cursor='pointer';row.title='คลิกเพื่อแก้ไขงาน';row.addEventListener('click',e=>{if(e.target.closest('button'))return;openEditJob(job)})})}if(jobRows){new MutationObserver(()=>setTimeout(bindEditRows,0)).observe(jobRows,{childList:true});setTimeout(bindEditRows,50)}
+    document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=b.textContent.trim();if((t==='+ งาน'||t==='+ เพิ่มงานวันนี้')&&!b.closest('#jobModal')){resetNew()}},true);
+  })();
+</script>
+<script>
+  document.addEventListener('click',e=>{if(e.target.closest('#dailyJobsRows tr')&&!e.target.closest('button'))document.getElementById('dailyJobsModal')?.classList.remove('open')},true);
+</script>
+<script>
+  // Filter the daily dispatch table by the selected team.
+  (()=>{
+    const filter=document.getElementById('dailyTeamFilter'),body=document.querySelector('#daily tbody'),date=document.getElementById('dailyDate');
+    if(!filter||!body)return;
+    const rowTeam=row=>{const text=row.querySelector('td b')?.textContent||'';const m=text.match(/(?:HA\s*&\s*AV|HA)\s*([1-4])/i);return m?'HA'+m[1]:''};
+    function apply(){const wanted=filter.value;body.querySelectorAll('tr').forEach(row=>{row.hidden=!!wanted&&rowTeam(row)!==wanted})}
+    filter.addEventListener('change',apply);
+    date?.addEventListener('change',()=>setTimeout(apply,300));
+    setTimeout(apply,350);
+  })();
+</script>
+<script>
+  // Admin can add a Rayong team to the Chanthaburi + Trat route when workload is high.
+  (()=>{
+    const body=document.querySelector('#daily tbody'),date=document.getElementById('dailyDate');if(!body||!date)return;
+    const teamOf=row=>(row.querySelector('td b')?.textContent||'').match(/(?:HA\s*&\s*AV|HA)\s*([1-4])/i)?.[1]?`HA${(row.querySelector('td b')?.textContent.match(/(?:HA\s*&\s*AV|HA)\s*([1-4])/i)||[])[1]}`:'';
+    function bindExtra(){const all=JSON.parse(localStorage.getItem('dailyExtraRouteTeams')||'{}');const selected=all[date.value]||[];body.querySelectorAll('tr').forEach(row=>{const team=teamOf(row),cells=row.querySelectorAll('td');if(!team||!cells[2])return;const route=cells[2].innerText.includes('จันทบุรี')||cells[2].innerText.includes('ตราด');let b=row.querySelector('.extra-route');if(route){b?.remove();return}if(!b){b=document.createElement('button');b.className='secondary extra-route action-icon';b.type='button';b.innerHTML='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M4 17 C18 17 23 43 39 43 H49" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M4 47 C18 47 23 21 39 21 H49" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M45 34 L61 43 L45 52 Z" fill="currentColor"/><path d="M45 12 L61 21 L45 30 Z" fill="currentColor"/></svg>';b.title='เพิ่มทีมนี้ไปช่วยวิ่งจันทบุรี + ตราด';b.setAttribute('aria-label',b.title);cells[cells.length-1].append(b)}b.onclick=()=>{const next=new Set(all[date.value]||[]);next.add(team);all[date.value]=[...next];localStorage.setItem('dailyExtraRouteTeams',JSON.stringify(all));date.dispatchEvent(new Event('change'));alert('เพิ่ม '+team+' ไปช่วยวิ่งจันทบุรี + ตราดแล้ว')}})}
+    date.addEventListener('change',()=>setTimeout(bindExtra,350));setTimeout(bindExtra,450);new MutationObserver(()=>setTimeout(bindExtra,120)).observe(body,{childList:true,subtree:true});
+  })();
+</script>
+<style>
+  #daily tbody td:last-child{display:flex;justify-content:flex-end;align-items:center;gap:8px;min-width:150px}
+  #daily .action-icon{width:34px;height:34px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eaf3ff;border:1px solid #cfe3ff;color:#1e6be8;font-size:22px;line-height:1;font-weight:800;box-shadow:0 0 0 0 rgba(72,151,255,.2);animation:softBluePulse 2s ease-in-out infinite}
+  #daily .action-icon svg{width:22px;height:22px;fill:currentColor;display:block}
+  #daily .action-icon:hover{background:#d9ebff;color:#0f5ed7;transform:translateX(2px)}
+  @keyframes softBluePulse{0%,100%{box-shadow:0 0 0 0 rgba(72,151,255,.12)}50%{box-shadow:0 0 0 7px rgba(72,151,255,.08)}}
+</style>
+<style>
+  .quick-settings{margin:4px 8px 22px;padding:12px 10px;border:1px solid rgba(145,190,235,.16);border-radius:14px;background:rgba(255,255,255,.045);color:#afc7df}.quick-settings-title{font-size:9px;letter-spacing:.16em;color:#6f9bca;font-weight:800;margin:0 3px 9px}.setting-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;margin-top:8px}.setting-buttons{display:flex;gap:4px}.setting-buttons button{width:25px;height:23px;padding:0;border-radius:7px;background:rgba(255,255,255,.08);color:#b9d2ec;border:1px solid transparent;font-size:11px;font-weight:800}.setting-buttons button:hover,.setting-buttons button.active{background:#2374c8;color:#fff;border-color:#70b3ff;box-shadow:0 3px 10px rgba(53,145,239,.22)}
+  html[data-theme="dark"] body{--bg:#081426;--card:#10243b;--ink:#edf5ff;--muted:#9db1c9;--line:#29415d;background:radial-gradient(circle at 80% -10%,#16365b 0,transparent 38%),#081426;color:var(--ink)}
+  html[data-theme="dark"] .card,html[data-theme="dark"] .team-card,html[data-theme="dark"] .route,html[data-theme="dark"] .m-card{background:linear-gradient(135deg,rgba(21,47,73,.9),rgba(13,32,53,.82));border-color:#2c4967;color:var(--ink)}
+  html[data-theme="dark"] .secondary,html[data-theme="dark"] .filters input,html[data-theme="dark"] .filters select,html[data-theme="dark"] .field input,html[data-theme="dark"] .field select{background:#142b44;color:var(--ink);border-color:#385570}html[data-theme="dark"] th{background:#142b44;color:#b8cae0}html[data-theme="dark"] tbody tr:hover td{background:#17334f}
+  html[data-theme="glass"] body{background:radial-gradient(circle at 12% 0%,#d9efff,transparent 32%),radial-gradient(circle at 88% 10%,#dcdcff,transparent 30%),#edf4fc}html[data-theme="glass"] .card,html[data-theme="glass"] .team-card,html[data-theme="glass"] .route{background:rgba(255,255,255,.42);border-color:rgba(255,255,255,.8);backdrop-filter:blur(28px) saturate(150%)}
+</style>
+<script>
+  // Keep route planning in sync with daily team adjustments.
+  (()=>{
+    const cards=[...document.querySelectorAll('#routes .route')];
+    const starts=['2026-09-18','2026-09-20','2026-09-22','2026-09-30'];
+    function refreshRoutes(){
+      const overrides=JSON.parse(localStorage.getItem('dailyRouteOverrides')||'{}');
+      const extras=JSON.parse(localStorage.getItem('dailyExtraRouteTeams')||'{}');
+      cards.forEach((card,i)=>{
+        const start=starts[i];if(!start)return;
+        const main=card.querySelector('.route-main strong'),small=card.querySelector('.route-main small'),pill=card.querySelector('.pill');
+        if(!main||!small)return;
+        const original=main.dataset.original||main.textContent.trim();
+        const originalSmall=small.dataset.original||small.textContent.trim();
+        main.dataset.original=original;small.dataset.original=originalSmall;
+        const team=overrides[start];
+        const extra=(extras[start]||[]).filter(Boolean);
+        if(team){
+          main.textContent=`${team} · ระยอง (ปรับแล้ว)`;
+          small.textContent=`ปรับจากรอบจันทบุรี + ตราด · วันที่ ${start}`;
+          if(pill){pill.textContent='ปรับเป็นระยอง';pill.className='pill green'}
+        }else{
+          main.textContent=original;small.textContent=originalSmall;
+          if(pill&&i===0){pill.textContent='ยืนยันแล้ว';pill.className='pill green'}
+        }
+        if(extra.length){
+          small.textContent+=(small.textContent.includes(' · ')?' · ':' · ')+'ทีมเสริม '+extra.join(', ')+' ไปจัน+ตราด';
+          if(pill&&!team){pill.textContent='มีทีมเสริม';pill.className='pill blue'}
+        }
+      });
+    }
+    refreshRoutes();setInterval(refreshRoutes,600);
+  })();
+</script>
+<script>
+  // Dashboard queue: always show all four teams and today's leave/holiday summary.
+  (()=>{
+    const title=[...document.querySelectorAll('.section-title')].find(e=>e.textContent.includes('คิวทีมวันนี้'));const card=title?.closest('.card');if(!card)return;
+    const teams=[['HA1','เต้ย','โบ้น','จันทบุรี + ตราด','blue',0],['HA2','เจมส์','ณุ','ระยอง · เมืองระยอง · บ้านฉาง','green',4],['HA3','สอง','ไปรท์','ระยอง · นิคมพัฒนา · ปลวกแดง','amber',5],['HA4','นุ๊ก','เบิ้ล','ระยอง · แกลง · วังจันทร์','green',3]];
+    card.innerHTML=`<div class="section-head"><div><div class="section-title">คิวทีมวันนี้</div><div class="section-note">แสดงครบ 4 ทีม · ระยองไม่เกิน 5 งาน/วัน · จันทบุรี+ตราด 5 งาน/วัน</div></div><span class="pill green">4 ทีม</span></div>${teams.map(t=>`<div class="team-card"><div class="team-row"><div><span class="team-name">${t[0]}</span> <span class="muted">${t[1]} · ${t[2]}</span></div><span class="pill ${t[4]}">${t[3]}</span></div><div class="bar"><span style="width:${t[5]*20}%;${t[4]==='amber'?'background:#d39522':''}"></span></div></div>`).join('')}<div class="notice" style="margin-top:14px"><b>วันหยุด / วันลา วันนี้</b><br><span class="muted">ยังไม่มีรายการวันหยุดหรือลาที่กระทบคิวงาน</span></div>`;
+  })();
+</script>
+<script>
+  // Fill the current route panel to five rows for a balanced dashboard layout.
+  (()=>{
+    const heading=[...document.querySelectorAll('.section-title')].find(e=>e.textContent.includes('รอบวิ่งปัจจุบัน'));const card=heading?.closest('.card');if(!card)return;
+    const rows=[
+      ['22–23','ก.ย.','HA3 · จันทบุรี + ตราด','ช่างสอง · ผู้ช่วยไปรท์ · รอจัดรอบ','จัดรอบ →',''],
+      ['24–25','ก.ย.','HA4 · จันทบุรี + ตราด','ช่างนุ๊ก · ผู้ช่วยเบิ้ล · รอจัดรอบ','จัดรอบ →',''],
+      ['26–27','ก.ย.','HA1 · จันทบุรี + ตราด','ช่างเต้ย · ผู้ช่วยโบ้น · รอจัดรอบ','จัดรอบ →','']
+    ];
+    const existing=card.querySelectorAll('.route');
+    rows.forEach((r,i)=>{if(existing[i+2])return;const el=document.createElement('div');el.className='route';el.innerHTML=`<div class="route-date">${r[0]}<br><span class="muted">${r[1]}</span></div><div class="route-line" style="background:#d9e8df"></div><div class="route-main"><strong>${r[2]}</strong><small>${r[3]}</small></div><div class="route-action" onclick="showScreen('routes')">${r[4]}</div>`;card.append(el)});
+  })();
+</script>
+<script>
+  // Clicking a dashboard team card opens that team's daily job list.
+  (()=>{
+    const heading=[...document.querySelectorAll('.section-title')].find(e=>e.textContent.includes('คิวทีมวันนี้'));const card=heading?.closest('.card');if(!card)return;
+    card.querySelectorAll('.team-card').forEach(teamCard=>{
+      const team=teamCard.querySelector('.team-name')?.textContent.trim();if(!team)return;
+      teamCard.style.cursor='pointer';teamCard.title=`คลิกเพื่อดูงานของ ${team}`;
+      teamCard.addEventListener('click',()=>{
+        const row=[...document.querySelectorAll('#daily tbody tr')].find(r=>r.querySelector('td b')?.textContent.trim().includes(team));
+        const view=row?.querySelector('.view-daily');
+        if(view){view.click();return}
+        const dailyNav=document.querySelector('[data-screen="daily"]');dailyNav?.click();
+      });
+    });
+  })();
+</script>
+<script>
+  // Dashboard always opens jobs for today, never the last date used in dispatch.
+  (()=>{
+    const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    document.addEventListener('click',e=>{
+      const teamCard=e.target.closest('#dashboard .team-card, #dashboard .team-card *')?.closest('.team-card')||e.target.closest('.team-card');
+      if(!teamCard||e.target.closest('.notice'))return;
+      const team=teamCard.querySelector('.team-name')?.textContent.trim();if(!team)return;
+      const dailyDate=document.getElementById('dailyDate');if(!dailyDate)return;
+      e.preventDefault();e.stopImmediatePropagation();
+      dailyDate.value=today;dailyDate.dispatchEvent(new Event('change'));
+      setTimeout(()=>{const row=[...document.querySelectorAll('#daily tbody tr')].find(r=>r.querySelector('td b')?.textContent.trim().includes(team));row?.querySelector('.view-daily')?.click()},450);
+    },true);
+  })();
+</script>
+<script>
+  // Sync dashboard capacity bars with the actual jobs for today's date.
+  (()=>{
+    const heading=[...document.querySelectorAll('.section-title')].find(e=>e.textContent.includes('คิวทีมวันนี้'));const card=heading?.closest('.card');if(!card)return;
+    const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,data=window.MONTH_JOBS||[];
+    const teamOf=x=>{const s=String(x.engineer||x.team||'');const m=s.match(/(?:TEAM|HA\s*&?\s*AV|HA)\s*([1-4])/i);return m?'HA'+m[1]:''};
+    function counts(){const transferred=JSON.parse(localStorage.getItem('jobTransfers')||'{}'),counts={HA1:0,HA2:0,HA3:0,HA4:0};data.forEach(x=>{const t=transferred[String(x.job)],date=t?.date||x.date,team=t?.team?'HA'+String(t.team).replace(/[^0-9]/g,''):teamOf(x);if(date===today&&counts[team]!=null)counts[team]++});return counts}
+    function sync(){const c=counts();card.querySelectorAll('.team-card').forEach(box=>{const team=box.querySelector('.team-name')?.textContent.trim(),n=c[team]??0,bar=box.querySelector('.bar span');if(!team||!bar)return;bar.style.width=Math.min(n/5*100,100)+'%';const old=box.querySelector('.team-capacity');if(old)old.remove();const pill=document.createElement('span');pill.className=`pill ${n>=5?'amber':'green'} team-capacity`;pill.textContent=`${n} / 5 งาน`;box.querySelector('.team-row')?.append(pill)});const note=card.querySelector('.section-note');if(note)note.textContent='แสดงงานจริงของวันนี้ · CAPA ทีมละ 5 งาน/วัน · จันทบุรี+ตราด 5 งาน/วัน'}
+    sync();setInterval(sync,700);
+  })();
+</script>
+<div class="modal-backdrop" id="routeEditModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-head"><div><div class="eyebrow">EDIT ROUTE</div><div class="title" style="font-size:22px">แก้ไขรอบวิ่ง</div><div class="subtitle" id="routeEditSubtitle">กำหนดทีม ผู้ช่วย และวันหยุด/ลา</div></div><button class="close" type="button" id="routeEditClose">×</button></div><form id="routeEditForm"><div class="form-grid"><div class="field"><label>ทีม</label><select id="routeEditTeam"><option>HA1</option><option>HA2</option><option>HA3</option><option>HA4</option></select></div><div class="field"><label>ผู้ช่วยช่าง</label><select id="routeEditHelper"><option>โบ้น</option><option>ณุ</option><option>ไปรท์</option><option>เบิ้ล</option><option>ไม่ระบุ</option></select></div><div class="field"><label>การจัดรอบ</label><select id="routeEditMode"><option value="trip">จันทบุรี + ตราด</option><option value="rayong">ระยอง</option></select></div><div class="field"><label>สถานะ</label><select id="routeEditStatus"><option>รอจัด</option><option>ยืนยันแล้ว</option><option>ปรับเป็นระยอง</option></select></div><div class="field" style="grid-column:1/-1"><label><input id="routeEditLeave" type="checkbox"> ทีม/ผู้ช่วยหยุดหรือลาในรอบนี้</label><input id="routeEditLeaveNote" placeholder="เช่น เต้ยลาพักร้อน / ผู้ช่วยณุหยุด" style="margin-top:8px"></div></div><div class="modal-actions"><button type="button" class="secondary" id="routeEditCancel">ยกเลิก</button><button type="submit" class="primary">บันทึก</button></div></form></div></div>
+<script>
+  // Route planning edit: team, helper and leave/holiday settings.
+  (()=>{
+    const modal=document.getElementById('routeEditModal'),form=document.getElementById('routeEditForm');if(!modal||!form)return;
+    const starts=['2026-09-18','2026-09-20','2026-09-22','2026-09-30'];let selected=null;
+    const helpers={HA1:'กันณพงค์ กุลวัฒน์นันท์',HA2:'วิษณุ พิกุลแกม',HA3:'ขวัญ พรมมา',HA4:'อภิรัตน์ แพรศรี'};
+    const close=()=>modal.classList.remove('open');document.getElementById('routeEditClose').onclick=close;document.getElementById('routeEditCancel').onclick=close;
+    function open(card,index){selected={card,index,start:starts[index]};const main=card.querySelector('.route-main strong')?.textContent||'';const small=card.querySelector('.route-main small')?.textContent||'';const saved=JSON.parse(localStorage.getItem('routePlans')||'{}')[selected.start]||{};const tm=saved.team||(main.match(/HA[1-4]/)||['HA1'])[0];document.getElementById('routeEditTeam').value=tm;document.getElementById('routeEditHelper').value=saved.helper||helpers[tm]||'ไม่ระบุ';document.getElementById('routeEditMode').value=saved.mode||(/ระยอง/.test(main)?'rayong':'trip');document.getElementById('routeEditStatus').value=saved.status||(/ยืนยัน/.test(card.innerText)?'ยืนยันแล้ว':'รอจัด');document.getElementById('routeEditLeave').checked=!!saved.leave;document.getElementById('routeEditLeaveNote').value=saved.leaveNote||'';document.getElementById('routeEditSubtitle').textContent=`รอบวันที่ ${selected.start}`;modal.classList.add('open')}
+    document.querySelectorAll('#routes .route button.secondary').forEach((b,i)=>b.addEventListener('click',()=>open(b.closest('.route'),i)));
+    form.addEventListener('submit',e=>{e.preventDefault();if(!selected)return;const team=document.getElementById('routeEditTeam').value,helper=document.getElementById('routeEditHelper').value,mode=document.getElementById('routeEditMode').value,status=document.getElementById('routeEditStatus').value,leave=document.getElementById('routeEditLeave').checked,leaveNote=document.getElementById('routeEditLeaveNote').value.trim();const plans=JSON.parse(localStorage.getItem('routePlans')||'{}');plans[selected.start]={team,helper,mode,status,leave,leaveNote};localStorage.setItem('routePlans',JSON.stringify(plans));const c=selected.card;c.querySelector('.route-main strong').textContent=`${team} · ${mode==='rayong'?'ระยอง':'จันทบุรี + ตราด'}`;c.querySelector('.route-main small').textContent=leave?`${helper} · ${leaveNote||'หยุด/ลา'}`:`ช่าง${team} · ผู้ช่วย${helper} · ${status}`;const pill=c.querySelector('.pill');if(pill){pill.textContent=leave?'หยุด/ลา':status;pill.className=`pill ${leave?'amber':status==='ยืนยันแล้ว'?'green':'gray'}`}close()});
+  })();
+</script>
+<script>
+  // Display full names instead of nicknames throughout the prototype.
+  (()=>{
+    const names={'เต้ย':'เฉลิมชัย อุกกระวงศ์','เจมส์':'ธนายุทธ พิมพิลา','สอง':'ธนวัฒน์ เถาวัลย์','นุ๊ก':'กฤษณล พุมลาวงศ์','โบ้น':'กันณพงค์ กุลวัฒน์นันท์','ณุ':'วิษณุ พิกุลแกม','ไปรท์':'ขวัญ พรมมา','เบิ้ล':'อภิรัตน์ แพรศรี'};
+    const replace=s=>Object.entries(names).reduce((v,[short,full])=>v.split(short).join(full),String(s||''));
+    const walk=node=>{if(node.nodeType===3){node.nodeValue=replace(node.nodeValue);return}if(node.nodeType===1&&['SCRIPT','STYLE'].includes(node.tagName))return;node.childNodes?.forEach(walk)};
+    walk(document.body);
+    document.querySelectorAll('option').forEach(o=>{o.textContent=replace(o.textContent);if(names[o.value])o.value=names[o.value]});
+  })();
+</script>
+<style>
+  #dashboard .team-card{padding:14px 16px}
+  #dashboard .team-row{align-items:flex-start;gap:12px}
+  #dashboard .team-info{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+  #dashboard .team-info .team-name{font-size:17px}
+  #dashboard .team-info .tech-name{font-size:14px;color:var(--ink);white-space:normal;overflow-wrap:anywhere}
+  #dashboard .team-info .helper-name{font-size:12px;color:var(--muted);white-space:normal;overflow-wrap:anywhere}
+  #dashboard .team-row>.pill{margin-left:auto;max-width:190px;white-space:normal;text-align:center;line-height:1.35}
+  #dashboard .team-card{height:122px;display:flex;flex-direction:column;justify-content:space-between}
+  #dashboard .team-card .bar{margin-top:auto}
+  #dashboard .route{min-height:86px}
+  #dashboard .grid.two{grid-template-columns:minmax(0,1.55fr) minmax(360px,.95fr)}
+  #dashboard .team-card{height:112px!important;min-height:112px!important;max-height:112px!important}
+  #dashboard>.grid.two>.card{padding:14px}
+  #dashboard .team-card{height:92px;padding:10px 12px;margin:7px 0}
+  #dashboard .team-info .team-name{font-size:15px}
+  #dashboard .team-info .tech-name{font-size:13px}
+  #dashboard .team-info .helper-name{font-size:11px}
+  #dashboard .team-row>.pill{font-size:11px;padding:5px 8px;max-width:170px}
+  #dashboard .route{height:112px;min-height:112px;padding:14px;margin-top:10px;gap:12px}
+  #dashboard .route .route-line{height:54px}
+  #dashboard .route .route-main{display:flex;flex-direction:column;justify-content:center}
+  #dashboard .route+.route{margin-top:5px}
+  /* Dashboard two-column rhythm: identical header, row and footer geometry. */
+  #dashboard .grid.two>.card{display:flex;flex-direction:column}
+  #dashboard .grid.two>.card>.section-head{flex:0 0 48px;min-height:48px;margin-bottom:12px}
+  #dashboard .grid.two>.card:first-child .route,#dashboard .grid.two>.card:nth-child(2) .team-card{height:112px!important;min-height:112px!important;max-height:112px!important;margin:0 0 8px!important;flex:0 0 112px}
+  #dashboard .grid.two>.card:first-child .route-guide,#dashboard .grid.two>.card:nth-child(2) .notice{height:92px;min-height:92px;margin-top:auto;flex:0 0 92px}
+  #dashboard .grid.two>.card:first-child .route-guide{padding:13px 17px}
+  #dashboard .grid.two>.card:nth-child(2) .notice{display:flex;flex-direction:column;justify-content:center}
+  #dashboard .route-date{width:70px;font-size:12px}
+  #dashboard .route-main strong{font-size:13px}
+  #dashboard .route-main small{font-size:11px}
+  #dashboard .team-card{height:112px!important;min-height:112px!important;max-height:112px!important;overflow:hidden}
+  #dashboard .team-card .team-row{height:54px;min-height:54px;align-items:flex-start}
+  #dashboard .team-card .team-row>.pill{max-height:40px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  #dashboard .team-card .bar{flex:0 0 7px;margin-top:auto}
+</style>
+<script>
+  // Re-layout long technician/helper names into readable stacked lines.
+  (()=>{
+    const heading=[...document.querySelectorAll('.section-title')].find(e=>e.textContent.includes('คิวทีมวันนี้'));const card=heading?.closest('.card');if(!card)return;
+    card.querySelectorAll('.team-card').forEach(box=>{const old=box.querySelector('.team-name')?.parentElement;if(!old||old.classList.contains('team-info'))return;const text=old.textContent.trim(),m=text.match(/^(HA[1-4])\s+(.+?)\s+·\s+(.+)$/);if(!m)return;old.className='team-info';old.innerHTML=`<span class="team-name">${m[1]}</span><span class="tech-name">${m[2]}</span><span class="helper-name">ผู้ช่วย: ${m[3]}</span>`});
+  })();
+</script>
+<style>
+  #jobs .table-wrap{overflow-x:auto}
+  #jobs #jobRows td{white-space:nowrap;max-width:260px}
+  #jobs #jobRows td.wrap{white-space:normal;min-width:180px}
+  #jobs #jobRows .job{cursor:pointer}
+  #jobs #jobRows .job:hover{text-decoration:underline}
+  #jobs table{min-width:2600px}
+</style>
+<script>
+  // Render the jobs list in the requested source-data column order.
+  (()=>{
+    const body=document.getElementById('jobRows'),table=body?.closest('table');if(!body||!table)return;
+    const data=window.MONTH_JOBS||[], teamNames={HA1:'เฉลิมชัย อุกกระวงศ์',HA2:'ธนายุทธ พิมพิลา',HA3:'ธนวัฒน์ เถาวัลย์',HA4:'กฤษณล พุมลาวงศ์'};
+    const cols=[['ENGINEER','engineer'],['JOB','job'],['PRODUCT','product'],['MODEL','model'],['S.Things','sthings'],['Connect','connect'],['ที่อยู่','address'],['ตำบล','subdistrict'],['อำเภอ','district'],['จังหวัด','province'],['นัดลูกค้า','appointment'],['TYPE','type'],['WTY','wty'],['อาการเสีย','symptom'],['รายละเอียดงาน','detail'],['CUSTOMER NOTED','customerNote'],['NAME','customerName'],['TEL','customerTel'],['ADD PART','addPart'],['REVIEW','review'],['PART STATUS','partStatus'],['STATUS UPDATE','statusUpdate'],['M-Gspn','mGspn']];
+    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const teamOf=x=>{const m=String(x.engineer||x.team||'').match(/(?:TEAM|HA\s*&?\s*AV|HA)\s*([1-4])/i);return m?'HA'+m[1]:''};
+    const displayEngineer=x=>teamNames[teamOf(x)]||x.engineer||x.team||'';
+    const rows=data.map(raw=>{const saved=JSON.parse(localStorage.getItem('job_'+String(raw.job))||'null')||{};const x=Object.assign({},raw,saved);const customer=x.customerName||x.customer||'';const tel=x.customerTel||'';return {...x,engineer:displayEngineer(x),customerName:customer,customerTel:tel,appointment:[x.date,x.time||x.appointment].filter(Boolean).join(' ')} });
+    table.querySelector('thead').innerHTML='<tr>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr>';
+    body.innerHTML=rows.map(x=>`<tr>${cols.map((c,i)=>`<td class="${['JOB','อาการเสีย','รายละเอียดงาน','CUSTOMER NOTED'].includes(c[0])?'wrap':''} ${c[0]==='JOB'?'job':''}" data-field="${c[1]}">${esc(x[c[1]]||'-')}</td>`).join('')}</tr>`).join('');
+    body.querySelectorAll('tr').forEach(row=>{row.querySelector('.job')?.addEventListener('click',()=>{const job=row.querySelector('.job').textContent.trim();const x=rows.find(r=>String(r.job)===job)||{};document.getElementById('detailTitle').textContent='JOB '+job;document.getElementById('detailSubtitle').textContent='รายละเอียดงานจากศูนย์ระยอง';document.getElementById('detailTime').textContent=x.appointment||'-';document.getElementById('detailArea').textContent=[x.subdistrict,x.district,x.province].filter(Boolean).join(' · ')||'-';document.getElementById('detailProduct').textContent=[x.product,x.model].filter(Boolean).join(' · ')||'-';document.getElementById('detailTeam').textContent=x.engineer||'-';document.getElementById('detailStatus').textContent=x.statusUpdate||x.status||'-';document.getElementById('detailModal').classList.add('open')})});
+  })();
+</script>
+<style>
+  /* Enterprise operations UI refresh — workflow and data behavior remain unchanged. */
+  :root{--bg:#f4f7fb;--card:#fff;--ink:#10243d;--muted:#647892;--blue:#1769e8;--blue-dark:#0d4fc2;--blue-soft:#eaf2ff;--line:#dce6f1;--green:#16846a;--green-soft:#e7f7f0;--amber:#b87508;--amber-soft:#fff3d9;--shadow:0 10px 28px rgba(19,49,84,.07);--shadow-hover:0 16px 36px rgba(19,49,84,.12)}
+  *{scrollbar-color:#c6d5e7 transparent;scrollbar-width:thin}
+  body{font-family:"Noto Sans Thai","Segoe UI",Tahoma,sans-serif;background:radial-gradient(circle at 85% -10%,#e6f0ff 0,transparent 34%),var(--bg);color:var(--ink);letter-spacing:-.01em}
+  .side{width:252px;padding:24px 16px;background:linear-gradient(180deg,#0a1c32 0%,#102d4d 100%);box-shadow:8px 0 28px rgba(10,28,50,.10);z-index:10}
+  .brand{font-size:20px;letter-spacing:.04em;padding:2px 14px 30px}.brand small{color:#9ab6d8}
+  .nav button{position:relative;padding:13px 14px;margin:5px 0;border:1px solid transparent;transition:background .2s ease,transform .2s ease,color .2s ease}.nav button:hover{transform:translateX(3px);background:rgba(85,157,245,.13)}.nav button.active{background:linear-gradient(90deg,#1b4b7d,#17416c);box-shadow:inset 3px 0 #63a4ff}
+  .main{margin-left:252px;width:calc(100% - 252px);max-width:1800px;padding:34px 42px 70px}
+  .top{margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.13em}.title{font-size:32px;letter-spacing:-.035em}.subtitle{font-size:14px;color:#70839a}
+  .card{border:1px solid rgba(210,223,237,.9);border-radius:18px;box-shadow:var(--shadow);transition:box-shadow .25s ease,transform .25s ease}.card:hover{box-shadow:var(--shadow-hover)}
+  .kpi-value{letter-spacing:-.05em}.kpi-label{font-weight:600}.kpis .card{position:relative;overflow:hidden}.kpis .card:after{content:"";position:absolute;right:-28px;bottom:-35px;width:105px;height:105px;border-radius:50%;background:var(--blue-soft);opacity:.7}
+  button{transition:transform .18s ease,box-shadow .18s ease,background .18s ease}.primary{background:linear-gradient(135deg,#1d70f2,#125bd7);box-shadow:0 7px 16px rgba(23,105,232,.2)}.primary:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(23,105,232,.28)}.secondary:hover{border-color:#9fc2ef;background:#f6faff;transform:translateY(-1px)}
+  .filters input,.filters select{border-radius:11px;padding:11px 13px;border-color:#d5e1ee;transition:border .2s,box-shadow .2s}.filters input:focus,.filters select:focus,input:focus,select:focus{outline:none;border-color:#6ca4ef;box-shadow:0 0 0 4px rgba(48,125,232,.12)}
+  .pill{font-size:11px;letter-spacing:.01em}.team-card,.route{border-color:#dce7f2;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}.team-card:hover,.route:hover{transform:translateY(-2px);border-color:#b8d2f2;box-shadow:0 8px 18px rgba(24,76,132,.08)}
+  .bar{height:8px;background:#edf2f7}.bar span{transition:width .55s cubic-bezier(.2,.8,.2,1)}
+  table{font-size:13px}th{position:sticky;top:0;z-index:1;background:#f7faff;color:#526b86;padding:13px 12px}td{padding:14px 12px}tbody tr{transition:background .15s ease}tbody tr:hover td{background:#f7fbff}
+  .modal-backdrop{backdrop-filter:blur(7px);background:rgba(8,25,45,.58)}.modal{border:1px solid rgba(255,255,255,.8);border-radius:20px;box-shadow:0 24px 70px rgba(7,26,50,.25);animation:modalIn .22s ease-out}.modal-head{border-bottom:1px solid #edf2f7;padding-bottom:16px}.close{transition:transform .2s,background .2s}.close:hover{transform:rotate(90deg);background:#e9f2ff;color:var(--blue)}
+  .screen.active{animation:screenIn .28s ease-out}@keyframes screenIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+  .notice{border:1px solid #f4dfaa}.empty{border-radius:12px;background:#f8fbfe}
+  @media(max-width:900px){.side{width:210px}.main{margin-left:210px;width:calc(100% - 210px);padding:24px}.title{font-size:27px}}
+  @media(max-width:620px){.main{padding:18px}.title{font-size:24px}.top{margin-bottom:20px}.card{border-radius:14px}}
+</style>
+<style>
+  /* Premium enterprise visual layer */
+  :root{--bg:#f1f5fa;--ink:#0b1d34;--muted:#71839b;--blue:#1769e8;--blue-dark:#0a3f91;--blue-soft:#eaf2ff;--gold:#c58a24;--line:#d9e4ef;--shadow:0 18px 45px rgba(12,35,66,.08);--shadow-hover:0 24px 55px rgba(12,35,66,.14)}
+  body{background:linear-gradient(135deg,#f7faff 0%,#eef3f9 48%,#e9f1fa 100%);position:relative}
+  body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:linear-gradient(rgba(55,102,155,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(55,102,155,.06) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 72%)}
+  .side{width:258px;background:linear-gradient(160deg,#07182d 0%,#0d2948 58%,#0b3c68 100%);border-right:1px solid rgba(144,190,238,.15);box-shadow:12px 0 36px rgba(4,20,39,.16)}
+  .brand{font-size:21px;letter-spacing:.08em;text-shadow:0 2px 14px rgba(99,171,255,.2)}.brand:after{content:"OPERATIONS PLATFORM";display:block;margin-top:8px;color:#6e9bca;font-size:8px;letter-spacing:.2em;font-weight:700}
+  .side-note{color:#8eafd0;border-top:1px solid rgba(164,202,239,.15);padding-top:14px}
+  .main{margin-left:258px;width:calc(100% - 258px);padding:38px 48px 80px}
+  .top{align-items:flex-end;margin-bottom:32px}.eyebrow{color:#2877e9;letter-spacing:.18em;font-size:10px}.title{font-size:34px;font-weight:850;letter-spacing:-.045em}.subtitle{color:#70839b;margin-top:7px}
+  .card{background:rgba(255,255,255,.84);border:1px solid rgba(213,226,240,.88);border-radius:22px;box-shadow:var(--shadow);backdrop-filter:blur(12px)}.card:hover{box-shadow:var(--shadow-hover)}
+  .kpis{gap:18px}.kpis .card{padding:21px 22px;border-radius:18px}.kpi-label{font-size:12px;color:#6d8199;text-transform:uppercase;letter-spacing:.06em}.kpi-value{font-size:34px;color:#0a2c51}.kpi-sub{color:#7d8fa4}
+  .section-head{margin-bottom:18px}.section-title{font-size:18px;letter-spacing:-.025em}.section-note{font-size:12px;color:#8293a7}
+  .primary{border-radius:12px;padding:13px 18px;background:linear-gradient(135deg,#2580ff,#0f56ce);box-shadow:0 9px 22px rgba(23,105,232,.24);letter-spacing:.01em}.primary:after{content:"  ↗";opacity:.7}.primary:hover{box-shadow:0 13px 28px rgba(23,105,232,.34)}
+  .secondary{border-radius:11px;border-color:#d5e3f1;background:rgba(255,255,255,.75)}
+  .route,.team-card{background:linear-gradient(110deg,rgba(255,255,255,.98),rgba(247,251,255,.82));border:1px solid #dce8f3;border-radius:16px;box-shadow:0 4px 12px rgba(22,61,101,.03)}.route:hover,.team-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(22,61,101,.10);border-color:#a9c9ec}
+  .route-line{background:linear-gradient(#8bbcff,#d8e8ff)!important}.route-action{font-weight:800;color:#1769e8}.route-date{color:#16385f}
+  .pill{border:1px solid rgba(255,255,255,.5);box-shadow:0 2px 8px rgba(26,74,125,.05);font-weight:750}
+  .bar{height:7px;background:#e9eff5;border-radius:99px}.bar span{background:linear-gradient(90deg,#247cff,#64b5ff)!important;box-shadow:0 0 10px rgba(36,124,255,.28)}
+  .notice{border-radius:15px;background:linear-gradient(110deg,#fff4d8,#fff9eb);border-color:#f1dfb3}
+  .filters{padding:3px 0}.filters input,.filters select{background:rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(22,61,101,.04)}
+  table{border:1px solid #dce7f2;border-radius:14px;overflow:hidden}th{background:linear-gradient(#f7faff,#f1f6fb);letter-spacing:.08em}tbody tr:hover td{background:#f3f8ff}
+  .modal{border-radius:24px;box-shadow:0 30px 90px rgba(4,22,45,.34);padding:24px}.modal-head{padding-bottom:18px}.modal-actions{padding-top:18px;border-top:1px solid #edf2f7}
+  @media(max-width:900px){.side{width:218px}.main{margin-left:218px;width:calc(100% - 218px);padding:28px}.title{font-size:29px}}
+</style>
+<style>
+  /* Glass UI 9.0 cards */
+  .card,.team-card,.route,.m-card{position:relative;isolation:isolate;background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.38));border:1px solid rgba(255,255,255,.78);backdrop-filter:blur(22px) saturate(135%);-webkit-backdrop-filter:blur(22px) saturate(135%);box-shadow:inset 0 1px 0 rgba(255,255,255,.92),inset 0 -1px 0 rgba(128,168,211,.12),0 16px 38px rgba(24,63,105,.09)}
+  .card:before,.team-card:before,.route:before,.m-card:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;background:linear-gradient(120deg,rgba(255,255,255,.5),transparent 36%,rgba(204,229,255,.14) 100%)}
+  .card:hover,.team-card:hover,.route:hover,.m-card:hover{background:linear-gradient(135deg,rgba(255,255,255,.84),rgba(239,248,255,.46));border-color:rgba(255,255,255,.98);box-shadow:inset 0 1px 0 #fff,0 22px 48px rgba(24,63,105,.14)}
+  #dashboard .card,#routes .card,#daily .card,#jobs .card,#teams .card{background:linear-gradient(135deg,rgba(255,255,255,.66),rgba(255,255,255,.32))}
+  .kpis .card:after{background:radial-gradient(circle,rgba(113,184,255,.26),transparent 68%);filter:blur(2px)}
+  .modal{background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(242,249,255,.78));backdrop-filter:blur(28px) saturate(140%);-webkit-backdrop-filter:blur(28px) saturate(140%);border:1px solid rgba(255,255,255,.92);box-shadow:inset 0 1px 0 #fff,0 32px 90px rgba(4,22,45,.32)}
+  .pill{background-color:rgba(255,255,255,.52)}
+  .notice{background:linear-gradient(135deg,rgba(255,244,216,.82),rgba(255,250,235,.55));backdrop-filter:blur(16px)}
+  .side{box-shadow:12px 0 36px rgba(4,20,39,.18),inset -1px 0 rgba(158,205,255,.12)}
+</style>
+<script>
+  // Theme and Thai / English (US) preferences.
+  (()=>{
+    const root=document.documentElement;
+    const themes=[...document.querySelectorAll('[data-theme-choice]')],langs=[...document.querySelectorAll('[data-lang-choice]')];
+    const labels={th:{dashboard:'ภาพรวมวันนี้',jobs:'รายการงาน',daily:'ตารางช่างรายวัน',routes:'จัดรอบวิ่งงาน',teams:'ทีมและ CAPA',technician:'มุมมองแอปช่าง',dashTitle:'ภาพรวมวันนี้',jobsTitle:'รายการงาน',dailyTitle:'ตารางช่างรายวัน',routesTitle:'จัดรอบวิ่งงาน',teamsTitle:'ทีมและ CAPA',techTitle:'มุมมองแอปช่าง'},en:{dashboard:"Today's overview",jobs:'Jobs',daily:'Daily dispatch',routes:'Route planning',teams:'Teams & CAPA',technician:'Technician app',dashTitle:"Today's overview",jobsTitle:'Jobs',dailyTitle:'Daily dispatch',routesTitle:'Route planning',teamsTitle:'Teams & CAPA',techTitle:'Technician app'}};
+    function applyTheme(v){root.dataset.theme=v;localStorage.setItem('uiTheme',v);themes.forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===v))}
+    function text(el,v){if(el)el.textContent=v}
+    function applyLang(v){const l=labels[v]||labels.th;root.lang=v==='en'?'en':'th';localStorage.setItem('uiLang',v);document.querySelectorAll('.nav button[data-screen]').forEach(b=>{const key=b.dataset.screen;if(l[key])text(b,l[key])});text(document.querySelector('#dashboard .title'),l.dashTitle);text(document.querySelector('#jobs .title'),l.jobsTitle);text(document.querySelector('#daily .title'),l.dailyTitle);text(document.querySelector('#routes .title'),l.routesTitle);text(document.querySelector('#teams .title'),l.teamsTitle);text(document.querySelector('#technician .title'),l.techTitle);langs.forEach(b=>b.classList.toggle('active',b.dataset.langChoice===v))}
+    themes.forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.themeChoice)));langs.forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.langChoice)));
+    applyTheme(localStorage.getItem('uiTheme')||'glass');applyLang(localStorage.getItem('uiLang')||'th');
+  })();
+</script>
+<style>
+  .quick-settings{display:none}.quick-settings.open{display:block;position:absolute;left:18px;bottom:92px;top:auto;width:226px;z-index:30;box-shadow:0 18px 40px rgba(0,0,0,.24)}
+  .settings-trigger{display:flex!important;align-items:center;gap:9px;margin:12px 0 10px!important;color:#c9def4!important;border:1px solid rgba(146,196,241,.18)!important;background:rgba(255,255,255,.055)!important}.settings-trigger:hover{background:#1a466f!important}
+  .settings-trigger .settings-icon{font-size:14px}.settings-trigger .settings-chevron{margin-left:auto;font-size:11px;opacity:.65}
+  html[data-theme="dark"] .kpi-label,html[data-theme="dark"] .kpi-sub,html[data-theme="dark"] .section-note,html[data-theme="dark"] .subtitle,html[data-theme="dark"] .muted,html[data-theme="dark"] .route-main small,html[data-theme="dark"] .team-info .helper-name{color:#b7c8da!important}
+  html[data-theme="dark"] .section-title,html[data-theme="dark"] .route-main strong,html[data-theme="dark"] .team-name,html[data-theme="dark"] .tech-name{color:#f2f7ff!important}
+  html[data-theme="dark"] .kpi-value{color:#f6f9ff!important}html[data-theme="dark"] .job{color:#72adff!important}html[data-theme="dark"] .route-action{color:#76b0ff!important}
+  html[data-theme="dark"] .quick-settings{background:rgba(17,42,68,.96);border-color:#355674}html[data-theme="dark"] .quick-settings-title{color:#8bb8e5}
+</style>
+<script>
+  // Collapse theme/language controls into a Settings menu.
+  (()=>{
+    const side=document.querySelector('.side'),panel=document.querySelector('.quick-settings');if(!side||!panel)return;
+    const nav=side.querySelector('.nav');const b=document.createElement('button');b.type='button';b.className='nav-settings';b.innerHTML='<span class="settings-icon">⚙</span><span>ตั้งค่า</span><span class="settings-chevron">⌄</span>';b.className='nav-settings settings-trigger';nav?.append(b);
+    b.addEventListener('click',e=>{e.stopPropagation();panel.classList.toggle('open')});document.addEventListener('click',e=>{if(!panel.contains(e.target)&&!b.contains(e.target))panel.classList.remove('open')});
+  })();
+</script>
+<script>
+  // Translate interface copy only; job/customer/team data stays unchanged.
+  (()=>{
+    const dict=[
+      ['ภาพรวมวันนี้',"Today's overview"],['รายการงาน','Jobs'],['ตารางช่างรายวัน','Daily dispatch'],['จัดรอบวิ่งงาน','Route planning'],['ทีมและ CAPA','Teams & CAPA'],['มุมมองแอปช่าง','Technician app'],['ตั้งค่า','Settings'],
+      ['งานทั้งหมดวันนี้','Total jobs today'],['งานระยอง','Rayong jobs'],['รอบต่างจังหวัด','Out-of-province trips'],['งานยังไม่จัดทีม','Unassigned jobs'],['เพิ่มขึ้น 3 งานจากเมื่อวาน','+3 vs yesterday'],['กระจายให้ 3 ทีม','Assigned to 3 teams'],['ต้องจัดคิวก่อน 10:00 น.','Assign before 10:00'],
+      ['รอบวิ่งปัจจุบัน','Current routes'],['รอบ 2 วัน · ค้างคืน 1 คืน','2-day trip · 1 overnight'],['กำลังเดินทาง','In transit'],['ดูรอบ →','View route →'],['จัดรอบ →','Plan route →'],['คิวทีมวันนี้',"Today's team queue"],['แสดงงานจริงของวันนี้ · CAPA ทีมละ 5 งาน/วัน · จันทบุรี+ตราด 5 งาน/วัน',"Live jobs today · CAPA 5/day · Chanthaburi + Trat 5/day"],['วันหยุด / วันลา วันนี้','Holidays / leave today'],['ยังไม่มีรายการวันหยุดหรือลาที่กระทบคิวงาน','No holidays or leave affecting today'],
+      ['ศูนย์หลัก: ระยอง','Main center: Rayong'],['พื้นที่: ระยอง · จันทบุรี · ตราด','Areas: Rayong · Chanthaburi · Trat'],['CAPA ทีมระยอง: 5 งาน/วัน','Rayong CAPA: 5 jobs/day'],['ศูนย์ระยอง','Rayong center'],['เพิ่มงานวันนี้','Add today\'s job'],['+ เพิ่มงานวันนี้','+ Add today\'s job'],['+ เพิ่มงาน','+ Add job'],['ปิด','Close'],['ยกเลิก','Cancel'],['บันทึก','Save'],['แก้ไข','Edit'],['ดูงาน','View jobs'],['โอนงาน','Transfer'],['เพิ่มทีมจัน+ตราด','Add Chanthaburi + Trat team'],['ปรับเป็นระยอง','Switch to Rayong'],
+      ['ทุกทีม','All teams'],['ทุกสถานะ','All statuses'],['ทุกพื้นที่','All areas'],['ค้นหา JOB / ลูกค้า / รุ่น','Search JOB / customer / model'],['รอจัด','Pending'],['ยืนยันแล้ว','Confirmed'],['เต็ม CAPA','CAPA full'],['ว่าง','Available'],['งาน','jobs'],['ทีม','teams']
+    ];
+    const protectedSel='td,.job,.team-name,.tech-name,.helper-name,.customer,.customer-name,.customer-tel,input,select,textarea';
+    const replaceText=(s,en)=>{let out=String(s);dict.slice().sort((a,b)=>b[0].length-a[0].length).forEach(([th,eng])=>{const from=en?th:eng,to=en?eng:th;out=out.split(from).join(to)});return out};
+    function apply(en){document.querySelectorAll('body *').forEach(el=>{if(el.matches(protectedSel)||el.closest(protectedSel)||el.tagName==='SCRIPT'||el.tagName==='STYLE')return;el.childNodes.forEach(n=>{if(n.nodeType===3)n.nodeValue=replaceText(n.nodeValue,en)})});document.documentElement.dataset.lang=en?'en':'th'}
+    document.querySelectorAll('[data-lang-choice]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>apply(b.dataset.langChoice==='en'),0)));
+    setTimeout(()=>apply(localStorage.getItem('uiLang')==='en'),20);
+  })();
+</script>
+<script>
+  // The team/CAPA page is redundant with the dashboard and daily dispatch.
+  (()=>{document.querySelector('[data-screen="teams"]')?.remove();document.getElementById('teams')?.remove()})();
+</script>
+<style>
+  #jobs .date-range{display:flex;align-items:center;gap:7px}.date-range input{width:145px;border:1px solid var(--line);background:rgba(255,255,255,.9);border-radius:11px;padding:11px 12px;color:var(--ink)}
+  #jobs .export-xlsx{width:42px;height:42px;padding:0;border-radius:12px;background:#e8f7ef;color:#16845d;border:1px solid #bde8d1;font-size:19px;display:inline-flex;align-items:center;justify-content:center}.export-xlsx:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(22,132,93,.16)}
+</style>
+<script>
+  // Jobs date range filter: today by default, max six months.
+  (()=>{
+    const filters=document.querySelector('#jobs .filters'),body=document.getElementById('jobRows');if(!filters||!body)return;
+    const oldDate=filters.querySelectorAll('select')[2];oldDate?.remove();
+    const today=new Date();today.setHours(0,0,0,0);const iso=d=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`};const plus6=new Date(today);plus6.setMonth(plus6.getMonth()+6);
+    const wrap=document.createElement('div');wrap.className='date-range';wrap.innerHTML=`<input id="jobsDateFrom" type="date" aria-label="วันที่เริ่มต้น" value="${iso(today)}" max="${iso(plus6)}"><span>–</span><input id="jobsDateTo" type="date" aria-label="วันที่สิ้นสุด" value="${iso(today)}" max="${iso(plus6)}">`;filters.append(wrap);
+    const exportBtn=document.createElement('button');exportBtn.className='export-xlsx';exportBtn.type='button';exportBtn.title='Export Excel (.xlsx)';exportBtn.setAttribute('aria-label',exportBtn.title);exportBtn.innerHTML='⇩';filters.append(exportBtn);
+    const records=new Map((window.MONTH_JOBS||[]).map(x=>[String(x.job),x]));
+    function apply(){let from=new Date(document.getElementById('jobsDateFrom').value+'T00:00:00'),to=new Date(document.getElementById('jobsDateTo').value+'T23:59:59');if(from>to){const t=from;from=new Date(to);to=new Date(t)}body.querySelectorAll('tr').forEach(row=>{const job=row.querySelector('.job')?.textContent.trim(),x=records.get(job),d=x?.date?new Date(x.date+'T12:00:00'):null;row.hidden=!!(d&&(d<from||d>to))})}
+    wrap.querySelectorAll('input').forEach(i=>i.addEventListener('change',apply));apply();
+    function escXml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
+    function crc32(bytes){let c,table=crc32.table;if(!table){table=crc32.table=[];for(let n=0;n<256;n++){c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);table[n]=c>>>0}}c=0xffffffff;for(const b of bytes)c=table[(c^b)&255]^(c>>>8);return (c^0xffffffff)>>>0}
+    function u16(n){return [n&255,(n>>>8)&255]};function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
+    function makeXlsx(rows){const headers=['ENGINEER','JOB','PRODUCT','MODEL','S.Things','Connect','ที่อยู่','ตำบล','อำเภอ','จังหวัด','นัดลูกค้า','TYPE','WTY','อาการเสีย','รายละเอียดงาน','CUSTOMER NOTED','NAME','TEL','ADD PART','REVIEW','PART STATUS','STATUS UPDATE','M-Gspn'];const cols=Array.from({length:headers.length},(_,i)=>{let n=i+1,s='';while(n){const r=(n-1)%26;s=String.fromCharCode(65+r)+s;n=Math.floor((n-1)/26)}return s});const cell=(v,ref)=>`<c r="${ref}" t="inlineStr"><is><t>${escXml(v)}</t></is></c>`;const sheet=[headers,...rows.map(r=>headers.map(h=>r[h]??''))].map((row,ri)=>`<row r="${ri+1}">${row.map((v,ci)=>cell(v,cols[ci]+(ri+1))).join('')}</row>`).join('');const files={'[Content_Types].xml':'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>','_rels/.rels':'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>','xl/workbook.xml':'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Jobs" sheetId="1" r:id="rId1"/></sheets></workbook>','xl/_rels/workbook.xml.rels':'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>','xl/worksheets/sheet1.xml':`<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheet}</sheetData></worksheet>`};const enc=new TextEncoder(),parts=[],central=[];let offset=0;Object.entries(files).forEach(([name,text])=>{const nb=enc.encode(name),data=enc.encode(text),head=new Uint8Array([80,75,3,4,20,0,0,0,0,0,0,0,0,0,...u32(data.length),...u32(data.length),...u16(nb.length),0,...nb]);parts.push(head,data);central.push(new Uint8Array([80,75,1,2,20,0,20,0,0,0,0,0,0,0,0,0,...u32(data.length),...u32(data.length),...u16(nb.length),0,0,0,0,0,0,0,0,0,0,0,0,...u32(offset),...nb]));offset+=head.length+data.length});const cd=central.reduce((a,b)=>a+b.length,0),end=new Uint8Array([80,75,5,6,0,0,0,0,...u16(central.length),...u16(central.length),...u32(cd),...u32(offset),0,0]);return new Blob([...parts,...central,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+    exportBtn.onclick=()=>{apply();const rows=[...body.querySelectorAll('tr:not([hidden])')].map(row=>{const o={};row.querySelectorAll('td[data-field]').forEach(td=>o[td.dataset.field]=td.innerText.trim());return o});const blob=makeXlsx(rows),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`jobs-${document.getElementById('jobsDateFrom').value}-${document.getElementById('jobsDateTo').value}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+  })();
+</script>
+<script>
+  // Replace the export handler with a valid XLSX (stored ZIP) writer.
+  (()=>{const btn=document.querySelector('#jobs .export-xlsx');if(!btn)return;const u16=n=>[n&255,n>>>8&255],u32=n=>[n&255,n>>>8&255,n>>>16&255,n>>>24&255];function crc32(a){let t=crc32.t;if(!t){t=crc32.t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xedb88320^c>>>1:c>>>1;t[n]=c>>>0}}let c=0xffffffff;for(const b of a)c=t[(c^b)&255]^c>>>8;return(c^0xffffffff)>>>0}const xml=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');function xlsx(rows){const H=[...document.querySelectorAll('#jobs thead th')].map(x=>x.innerText.trim()),E=new TextEncoder(),col=i=>{let s='';for(i++;i;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s},cell=(v,r)=>`<c r="${r}" t="inlineStr"><is><t>${xml(v)}</t></is></c>`,sheet=[H,...rows].map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>cell(v,col(j)+(i+1))).join('')}</row>`).join(''),files={'[Content_Types].xml':'<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>','_rels/.rels':'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>','xl/workbook.xml':'<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Jobs" sheetId="1" r:id="rId1"/></sheets></workbook>','xl/_rels/workbook.xml.rels':'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>','xl/worksheets/sheet1.xml':`<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheet}</sheetData></worksheet>`};const chunks=[],central=[];let off=0;Object.entries(files).forEach(([name,text])=>{const n=E.encode(name),d=E.encode(text),c=crc32(d),h=new Uint8Array([80,75,3,4,20,0,0,0,0,0,0,0,...u32(c),...u32(d.length),...u32(d.length),...u16(n.length),0,0,...n]);chunks.push(h,d);central.push(new Uint8Array([80,75,1,2,20,0,20,0,0,0,0,0,0,0,...u32(c),...u32(d.length),...u32(d.length),...u16(n.length),0,0,0,0,0,0,0,0,0,0,0,0,...u32(off),...n]));off+=h.length+d.length});const size=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array([80,75,5,6,0,0,0,0,...u16(central.length),...u16(central.length),...u32(size),...u32(off),0,0]);return new Blob([...chunks,...central,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}btn.onclick=()=>{const rows=[...document.querySelectorAll('#jobs tbody tr:not([hidden])')].map(r=>[...r.querySelectorAll('td')].map(c=>c.innerText.trim()));const a=document.createElement('a'),url=URL.createObjectURL(xlsx(rows));a.href=url;a.download='jobs-export.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}})();
+</script>
+<style>
+  #appToast{position:fixed;right:28px;bottom:28px;z-index:100;display:flex;align-items:center;gap:10px;min-width:260px;max-width:390px;padding:14px 17px;border-radius:15px;color:#eaf4ff;background:linear-gradient(135deg,#102d4e,#164e7b);border:1px solid rgba(149,207,255,.38);box-shadow:0 18px 42px rgba(3,22,43,.3);font-size:13px;font-weight:650;opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .22s,transform .22s}#appToast.show{opacity:1;transform:none}#appToast:before{content:"✓";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#2c98e8;color:#fff;font-weight:900}#appToast.error:before{content:"!";background:#d18a24}
+  .live-status{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(231,247,240,.75);border:1px solid #bce7d4;color:#16775d;font-size:11px;font-weight:800}.live-status i{width:7px;height:7px;border-radius:50%;background:#27b982;box-shadow:0 0 0 4px rgba(39,185,130,.14);animation:livePulse 1.8s infinite}@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.78)}}
+  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<div id="appToast" role="status" aria-live="polite"></div>
+<script>
+  // Non-blocking product feedback instead of browser alert dialogs.
+  (()=>{let timer;const toast=document.getElementById('appToast');window.showToast=(message,type='success')=>{if(!toast)return;toast.textContent=String(message);toast.className=type==='error'?'show error':'show';clearTimeout(timer);timer=setTimeout(()=>toast.className='',3200)};window.alert=message=>window.showToast(message)} )();
+  const live=document.createElement('span');live.className='live-status';live.innerHTML='<i></i> Live operations';document.querySelector('#dashboard .top')?.append(live);
+</script>
+<script>
+  // Keep date defaults aligned with the user's local calendar date.
+  (()=>{const d=new Date(),iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,display=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;['dailyDate','fDate','rStart'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=iso});const dash=document.querySelector('#dashboard .subtitle');if(dash)dash.textContent=`${display} · ศูนย์ระยอง`})();
+</script>
+<script>
+  // Keep the dashboard route panel aligned with the four operating teams.
+  document.querySelectorAll('#dashboard .route').forEach(r=>{if(r.querySelector('.route-date')?.textContent.includes('26–27'))r.remove()});
+</script>
+<style>
+  #dashboard .route-guide{margin-top:16px;padding:15px 17px;border-radius:16px;border:1px solid rgba(196,216,235,.8);background:linear-gradient(135deg,rgba(235,245,255,.7),rgba(255,255,255,.38));display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  #dashboard .route-guide-title{grid-column:1/-1;font-size:12px;font-weight:850;color:#274c75;letter-spacing:.02em}
+  #dashboard .route-rule{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#6c8199;line-height:1.45}.route-rule i{flex:0 0 7px;width:7px;height:7px;margin-top:4px;border-radius:50%;background:#4c9af2;box-shadow:0 0 0 4px #dcecff}
+  @media(max-width:760px){#dashboard .route-guide{grid-template-columns:1fr}.route-guide-title{grid-column:auto}}
+</style>
+<script>
+  // Add a compact route-rules explanation beneath the four route rows.
+  (()=>{const h=[...document.querySelectorAll('#dashboard .section-title')].find(e=>e.textContent.includes('รอบวิ่งปัจจุบัน'));const card=h?.closest('.card');if(!card||card.querySelector('.route-guide'))return;const g=document.createElement('div');g.className='route-guide';g.innerHTML='<div class="route-guide-title">หลักการจัดรอบวิ่ง</div><div class="route-rule"><i></i><span>1 ทีมต่อรอบ<br>เดินทาง 2 วัน</span></div><div class="route-rule"><i></i><span>จันทบุรี + ตราด<br>ค้างคืน 1 คืน</span></div><div class="route-rule"><i></i><span>ระยองไม่เกิน<br>5 งานต่อวัน</span></div>';card.append(g)})();
+</script>
+<style>
+  /* Final QA correction: normalize the late theme overrides and restore the intended page geometry. */
+  html[data-theme="glass"] body{background:linear-gradient(135deg,#f7f8fa 0%,#f1f3f6 58%,#f7f8fa 100%)!important;color:#111827!important}
+  body:before{opacity:.035!important}
+  .side{position:sticky!important;inset:auto!important;top:0!important;width:100%!important;height:76px!important;min-height:76px!important;display:flex!important;align-items:center!important;overflow:visible!important;padding:0 32px!important;background:rgba(255,255,255,.92)!important;color:#111827!important;border-right:0!important;border-bottom:1px solid #e5e7eb!important;box-shadow:0 3px 18px rgba(0,0,0,.05)!important;z-index:15!important}
+  .brand{order:1!important;min-width:188px!important;padding:0!important;color:#111827!important;text-shadow:none!important}.brand small{color:#7c8490!important}.brand:after{display:none!important}
+  .nav{order:2!important;display:flex!important;align-items:center!important;gap:3px!important;flex:1!important;overflow:visible!important}.nav button{width:auto!important;margin:0!important;padding:9px 11px!important;border-radius:8px!important;background:transparent!important;color:#646b76!important;border:1px solid transparent!important;transform:none!important;box-shadow:none!important}.nav button:before{display:none!important}.nav button:hover{background:#f2f2f4!important;color:#111!important}.nav button.active{background:#111827!important;color:#fff!important;border-color:#111827!important}
+  .quick-settings{display:none!important}.quick-settings.open{display:flex!important;position:absolute!important;right:32px!important;left:auto!important;top:65px!important;bottom:auto!important;z-index:30!important;background:#fff!important;border:1px solid #e1e3e7!important;box-shadow:0 18px 40px rgba(0,0,0,.16)!important}
+  .settings-trigger{order:3!important;display:flex!important;background:#f5f5f7!important;color:#4b5563!important;border:1px solid #e1e3e7!important;margin:0!important}.settings-trigger:hover{background:#111827!important;color:#fff!important}
+  .side-note{display:none!important}
+  .main{margin-left:0!important;width:100%!important;max-width:1600px!important;padding:68px clamp(24px,5vw,82px) 100px!important;margin-inline:auto!important}
+  .card,.team-card,.route,.m-card{background:#fff!important;border:1px solid #e5e7eb!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 12px 35px rgba(0,0,0,.055)!important}.card:before,.team-card:before,.route:before,.m-card:before{display:none!important}.card:hover,.team-card:hover,.route:hover,.m-card:hover{background:#fff!important;box-shadow:0 18px 45px rgba(0,0,0,.08)!important}
+  #dashboard .grid.two{align-items:stretch!important}.screen.active{animation:none!important}.screen.active .top,.screen.active .card{animation:none!important}
+  #dashboard .grid.two>.card{display:flex!important;flex-direction:column!important;min-height:690px!important}.section-head{flex:0 0 52px!important;min-height:52px!important;margin-bottom:14px!important}
+  #dashboard .grid.two>.card:first-child .route,#dashboard .grid.two>.card:nth-child(2) .team-card{height:112px!important;min-height:112px!important;max-height:112px!important;flex:0 0 112px!important;margin:0 0 10px!important}
+  #dashboard .grid.two>.card:first-child .route-guide,#dashboard .grid.two>.card:nth-child(2) .notice{height:96px!important;min-height:96px!important;flex:0 0 96px!important;margin-top:auto!important}
+  #dashboard .grid.two>.card:first-child .route-guide{padding:15px 17px!important;background:#f8fafc!important;border-color:#dfe5eb!important}.route-guide-title{color:#374151!important}.route-rule{color:#6b7280!important}.route-rule i{background:#0071e3!important;box-shadow:0 0 0 4px #eaf3ff!important}
+  .title{color:#050b14!important}.subtitle,.section-note,.route-main small,.muted{color:#6e7785!important}.kpi-value{color:#050b14!important}.route-main strong,.team-name,.section-title{color:#111827!important}
+  @media(max-width:980px){.side{height:auto!important;min-height:76px!important;flex-wrap:wrap!important;padding:16px 22px!important}.nav{order:4!important;flex-basis:100%!important;overflow-x:auto!important}.main{padding:45px 24px 70px!important}}
+  @media(max-width:620px){.side{position:sticky!important}.brand{min-width:0!important}.main{padding:36px 15px 70px!important}.top{flex-direction:column!important;align-items:flex-start!important;gap:12px!important;margin-bottom:30px!important}.title{font-size:43px!important}.kpis{grid-template-columns:1fr!important}.grid.two{grid-template-columns:1fr!important}.card{padding:18px!important}}
+</style>
+<style>
+  /* V2 Command Center redesign: a new visual identity, not a theme tweak. */
+  :root{--ink:#101114;--ink-2:#5f636b;--line:#e4e5e8;--bg:#f4f4f6;--surface:#fff;--electric:#1d73f8;--lime:#b9ef72;--night:#101114}
+  html,body{background:var(--bg)!important;color:var(--ink)!important;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif!important}
+  body:before{display:none!important}
+  .side{height:70px!important;min-height:70px!important;padding:0 38px!important;background:rgba(16,17,20,.97)!important;color:#fff!important;border-bottom:1px solid rgba(255,255,255,.1)!important;box-shadow:0 10px 30px rgba(0,0,0,.12)!important}
+  .brand{color:#fff!important;font-size:16px!important;letter-spacing:.16em!important;min-width:210px!important}.brand small{color:#9da1aa!important;font-size:9px!important}
+  .nav button{color:#a6a9b1!important;border-radius:999px!important;padding:8px 13px!important;font-size:12px!important}.nav button:hover{color:#fff!important;background:#24262b!important}.nav button.active{color:#0f1012!important;background:#fff!important;border-color:#fff!important}
+  .settings-trigger{background:#24262b!important;color:#e7e8eb!important;border-color:#383b42!important}.settings-trigger:hover{background:#fff!important;color:#111!important}.quick-settings.open{top:59px!important;right:30px!important;background:#1b1d21!important;border-color:#343840!important;color:#fff!important}.quick-settings.open .setting-row{color:#d7d9de!important}
+  .main{max-width:1540px!important;padding:50px clamp(22px,4.8vw,76px) 100px!important}
+  .top{max-width:none!important;margin:0 0 22px!important;padding:42px 46px!important;min-height:210px!important;align-items:flex-end!important;border-radius:30px!important;background:radial-gradient(circle at 83% 14%,rgba(54,119,255,.55),transparent 28%),linear-gradient(135deg,#111215 0%,#171a22 52%,#202936 100%)!important;position:relative!important;overflow:hidden!important;box-shadow:0 26px 60px rgba(12,18,30,.18)!important}.top:after{content:"";position:absolute;right:-7%;bottom:-68%;width:480px;height:480px;border:1px solid rgba(255,255,255,.14);border-radius:50%;box-shadow:0 0 0 34px rgba(255,255,255,.03),0 0 0 68px rgba(255,255,255,.025);pointer-events:none}.top>div{position:relative;z-index:1}.top>.primary,.top>.live-status{position:relative;z-index:1}.eyebrow{color:#79aaff!important;font-size:10px!important;letter-spacing:.2em!important}.title{color:#fff!important;font-size:clamp(42px,5.5vw,78px)!important;letter-spacing:-.08em!important;margin:12px 0 8px!important}.subtitle{color:#aeb7c7!important}.top>.primary{background:#fff!important;color:#111!important;border-radius:999px!important;box-shadow:none!important}.top>.primary:hover{background:#dceaff!important}.live-status{background:rgba(185,239,114,.14)!important;border-color:rgba(185,239,114,.35)!important;color:#d0f89d!important}.live-status i{background:var(--lime)!important}
+  .kpis{max-width:none!important;gap:12px!important;margin-bottom:22px!important}.kpis .card{border-radius:20px!important;min-height:142px!important;padding:22px 24px!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}.kpis .card:first-child{border-top:3px solid var(--electric)!important}.kpis .card:nth-child(2){border-top:3px solid #9be252!important}.kpis .card:nth-child(3){border-top:3px solid #d2d5dc!important}.kpis .card:nth-child(4){border-top:3px solid #ffb938!important}.kpi-label{color:#737780!important;font-size:11px!important;letter-spacing:.06em!important;text-transform:uppercase!important}.kpi-value{color:#101114!important;font-size:42px!important;margin-top:15px!important}.kpi-sub{color:#8a8d95!important}
+  .grid.two{max-width:none!important;grid-template-columns:minmax(0,1.52fr) minmax(390px,1fr)!important;gap:22px!important}.grid.two>.card{border-radius:26px!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important;padding:24px!important;min-height:690px!important}.section-title{font-size:21px!important;color:#101114!important;letter-spacing:-.04em!important}.section-note{color:#8a8d95!important}.pill{box-shadow:none!important;border:0!important}.route,.team-card{background:#fafafa!important;border:1px solid #e7e8eb!important;box-shadow:none!important;border-radius:18px!important}.route:hover,.team-card:hover{border-color:#b8c7da!important;transform:translateY(-3px)!important;box-shadow:0 12px 24px rgba(16,17,20,.06)!important}.route-main strong,.team-name{color:#101114!important;font-size:15px!important}.route-main small,.muted{color:#777b84!important}.route-line{background:var(--electric)!important;width:2px!important;opacity:.8}.bar{background:#e8e9ec!important}.bar span{background:var(--electric)!important}.notice{background:#fff7df!important;border:1px solid #f3dfac!important;border-radius:17px!important;color:#8b650d!important}
+  .card,#routes .card,#daily .card,#jobs .card,#teams .card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.card:before,.team-card:before,.route:before{display:none!important}
+  .filters input,.filters select,.field input,.field select,.field textarea{border-radius:12px!important;border-color:#dcdfe4!important}.secondary{border-radius:999px!important;color:#111!important;border-color:#d7d9df!important}.secondary:hover{border-color:#111!important;background:#111!important;color:#fff!important}th{background:#f6f6f7!important;color:#70747d!important}td{border-bottom-color:#ececef!important}
+  .screen.active{animation:commandIn .55s cubic-bezier(.2,.72,.2,1) both!important}.screen.active .top{animation:heroIn .72s cubic-bezier(.2,.72,.2,1) both!important}.screen.active .card{animation:surfaceIn .65s cubic-bezier(.2,.72,.2,1) both!important}.screen.active .card:nth-child(2){animation-delay:.07s!important}.screen.active .card:nth-child(3){animation-delay:.14s!important}.screen.active .card:nth-child(4){animation-delay:.21s!important}
+  @keyframes commandIn{from{opacity:0}to{opacity:1}}@keyframes heroIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}@keyframes surfaceIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @media(max-width:980px){.side{height:auto!important;min-height:70px!important;flex-wrap:wrap!important;padding:15px 22px!important}.nav{order:4!important;flex-basis:100%!important;overflow-x:auto!important}.main{padding:34px 22px 70px!important}.top{min-height:190px!important;padding:32px!important}.grid.two{grid-template-columns:1fr!important}}
+  @media(max-width:620px){.brand{min-width:0!important;font-size:14px!important}.top{padding:28px 22px!important;border-radius:22px!important;min-height:250px!important;align-items:flex-start!important;justify-content:flex-end!important}.top>.primary{align-self:flex-start!important}.title{font-size:45px!important}.kpis{grid-template-columns:1fr!important}.grid.two>.card{min-height:auto!important;padding:18px!important;border-radius:20px!important}.section-head{flex-basis:auto!important;min-height:auto!important}.route,.team-card{height:auto!important;min-height:104px!important;max-height:none!important}.route-guide,.notice{height:auto!important;min-height:90px!important}.main{padding:25px 15px 60px!important}}
+  @media(prefers-reduced-motion:reduce){.screen.active,.screen.active .top,.screen.active .card{animation:none!important}}
+</style>
+<style>
+  /* V3: complete dark command-center system for every screen. */
+  :root{--ink:#f5f7fb;--ink-2:#9ba5b3;--line:#2a313b;--bg:#0b0e12;--surface:#15191f;--surface-2:#1b2027;--blue:#4a92ff;--blue-soft:#122b50;--green:#77d6a4;--amber:#f3bd60;--shadow:0 20px 55px rgba(0,0,0,.24)}
+  html,body{background:#0b0e12!important;color:#f5f7fb!important}
+  .side{background:#0b0e12!important;border-bottom:1px solid #242a32!important;box-shadow:0 8px 24px rgba(0,0,0,.28)!important}
+  .brand{color:#f7f9fc!important}.brand small{color:#7d8795!important}.nav button{color:#8993a2!important}.nav button:hover{background:#1a2028!important;color:#fff!important}.nav button.active{background:#f5f7fb!important;color:#0b0e12!important}
+  .settings-trigger{background:#171b21!important;color:#cbd3de!important;border-color:#2a313b!important}.settings-trigger:hover{background:#fff!important;color:#111!important}.quick-settings.open{background:#171b21!important;border-color:#303844!important;color:#fff!important}
+  .main{background:radial-gradient(circle at 92% 4%,rgba(41,99,186,.16),transparent 25%),#0b0e12!important;max-width:none!important;padding:48px clamp(20px,4vw,66px) 100px!important}
+  .top{background:linear-gradient(135deg,#171c24,#11151b)!important;border:1px solid #2a313b!important;box-shadow:0 26px 60px rgba(0,0,0,.25)!important;min-height:190px!important}.top:after{border-color:rgba(99,157,255,.16)!important}.eyebrow{color:#71aaff!important}.title{color:#fff!important}.subtitle{color:#9da8b7!important}.top>.primary{background:#fff!important;color:#101114!important}
+  .live-status{background:rgba(119,214,164,.1)!important;border-color:rgba(119,214,164,.32)!important;color:#9de4ba!important}
+  .card,.grid.two>.card,.kpis .card{background:linear-gradient(145deg,#171b21,#12161b)!important;border:1px solid #2a313b!important;box-shadow:var(--shadow)!important;color:#f5f7fb!important}.card:hover{border-color:#3e4c5e!important;box-shadow:0 24px 62px rgba(0,0,0,.35)!important}.kpis .card{min-height:136px!important}.kpis .card:first-child{border-top-color:#4a92ff!important}.kpis .card:nth-child(2){border-top-color:#77d6a4!important}.kpis .card:nth-child(3){border-top-color:#667180!important}.kpis .card:nth-child(4){border-top-color:#f3bd60!important}.kpi-label,.section-note,.kpi-sub{color:#8994a4!important}.kpi-value{color:#fff!important}
+  .section-title{color:#fff!important}.route,.team-card{background:#1b2027!important;border:1px solid #303844!important;color:#f5f7fb!important;box-shadow:none!important}.route:hover,.team-card:hover{background:#20262f!important;border-color:#4d79ac!important;box-shadow:0 15px 30px rgba(0,0,0,.22)!important}.route-main strong,.team-name,.route-date{color:#fff!important}.route-main small,.muted{color:#9aa5b4!important}.route-line{background:linear-gradient(#4a92ff,#73b1ff)!important}.route-action{color:#75adff!important}.bar{background:#2c333d!important}.bar span{background:linear-gradient(90deg,#3f86fa,#75b5ff)!important}.pill.blue{background:#15365f!important;color:#7db3ff!important}.pill.green{background:#123e31!important;color:#8ce4b3!important}.pill.amber{background:#4a3618!important;color:#ffd67f!important}.pill.gray{background:#2a3039!important;color:#aeb7c4!important}.notice{background:linear-gradient(135deg,#3c2d14,#2b2315)!important;border-color:#705321!important;color:#ffd580!important}
+  .route-guide{background:#12171d!important;border-color:#303844!important}.route-guide-title{color:#edf3fb!important}.route-rule{color:#9da8b7!important}.route-rule i{background:#4a92ff!important;box-shadow:0 0 0 4px #173158!important}
+  .filters input,.filters select,.field input,.field select,.field textarea{background:#171c23!important;color:#f5f7fb!important;border-color:#303844!important}.filters input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#778291!important}.filters input:focus,.filters select:focus,.field input:focus,.field select:focus,.field textarea:focus{border-color:#4a92ff!important;box-shadow:0 0 0 3px rgba(74,146,255,.16)!important}.secondary{background:#1b2027!important;border-color:#3a444f!important;color:#fff!important}.secondary:hover{background:#fff!important;color:#101114!important;border-color:#fff!important}th{background:#20262e!important;color:#aeb7c4!important;border-bottom-color:#303844!important}td{border-bottom-color:#2a313b!important;color:#e5e9ef!important}tbody tr:hover td{background:#1d2938!important}.job{color:#75adff!important}
+  .modal{background:#151a20!important;border:1px solid #343c47!important;color:#f5f7fb!important}.modal .title{color:#fff!important}.modal .subtitle,.modal .field label{color:#a6b0bd!important}.close{background:#252c35!important;color:#d4dae3!important}.modal-actions{border-color:#303844!important}
+  .mobile-frame{background:#11161d!important;border-color:#27313c!important}.mobile-head,.mobile-nav,.m-card{background:#171c23!important;color:#f5f7fb!important;border-color:#303844!important}.m-meta label{color:#9aa5b4!important}.status-buttons button{background:#252c35!important;color:#d6dde7!important}.status-buttons button.selected{background:#4a92ff!important;color:#fff!important}
+  #dashboard .grid.two{align-items:stretch!important}#dashboard .grid.two>.card{min-height:690px!important}.screen.active,.screen.active .top,.screen.active .card{animation:none!important}
+  @media(max-width:980px){.main{padding:34px 22px 70px!important}.top{min-height:190px!important}.grid.two{grid-template-columns:1fr!important}}
+  @media(max-width:620px){.main{padding:25px 15px 60px!important}.top{min-height:230px!important;padding:26px 21px!important}.title{font-size:43px!important}.kpis{grid-template-columns:1fr!important}.grid.two>.card{min-height:auto!important}.route,.team-card{min-height:104px!important;height:auto!important}.route-guide,.notice{height:auto!important;min-height:90px!important}}
+</style>
+<style>
+  /* V4 Apple-inspired light system: quiet navigation, editorial hero, clean surfaces. */
+  :root{--ink:#1d1d1f;--ink-2:#6e6e73;--line:#d2d2d7;--bg:#f5f5f7;--surface:#fff;--blue:#06c;--shadow:0 8px 28px rgba(0,0,0,.06)}
+  html,body{background:#f5f5f7!important;color:#1d1d1f!important}
+  .side{background:rgba(255,255,255,.86)!important;color:#1d1d1f!important;border-bottom:1px solid rgba(0,0,0,.12)!important;box-shadow:0 3px 16px rgba(0,0,0,.04)!important}.brand{color:#1d1d1f!important}.brand small{color:#6e6e73!important}.nav button{color:#6e6e73!important}.nav button:hover{background:#f0f0f2!important;color:#1d1d1f!important}.nav button.active{background:#1d1d1f!important;color:#fff!important}.settings-trigger{background:#f0f0f2!important;color:#1d1d1f!important;border-color:#d2d2d7!important}.settings-trigger:hover{background:#1d1d1f!important;color:#fff!important}.quick-settings.open{background:#fff!important;border-color:#d2d2d7!important;color:#1d1d1f!important;box-shadow:0 18px 40px rgba(0,0,0,.14)!important}
+  .main{background:#f5f5f7!important;padding:56px clamp(20px,4.5vw,72px) 100px!important}
+  .top{background:#000!important;border:0!important;border-radius:28px!important;box-shadow:none!important;min-height:210px!important}.top:after{border-color:rgba(255,255,255,.12)!important}.title{color:#f5f5f7!important;font-weight:700!important}.subtitle{color:#a1a1a6!important}.top>.primary{background:#fff!important;color:#1d1d1f!important}.eyebrow{color:#6eb5ff!important}.live-status{background:rgba(255,255,255,.08)!important;color:#a7e6be!important;border-color:rgba(255,255,255,.18)!important}
+  .card,.grid.two>.card,.kpis .card{background:#fff!important;color:#1d1d1f!important;border:1px solid #d2d2d7!important;box-shadow:var(--shadow)!important}.card:hover{border-color:#b9b9c0!important;box-shadow:0 14px 36px rgba(0,0,0,.09)!important}.kpi-label,.kpi-sub,.section-note{color:#6e6e73!important}.kpi-value,.section-title,.route-main strong,.team-name,.route-date{color:#1d1d1f!important}.route,.team-card{background:#fbfbfd!important;border:1px solid #d2d2d7!important;color:#1d1d1f!important;box-shadow:none!important}.route:hover,.team-card:hover{background:#fff!important;border-color:#aeb9c9!important;box-shadow:0 12px 28px rgba(0,0,0,.07)!important}.route-main small,.muted{color:#6e6e73!important}.route-line{background:#06c!important}.route-action{color:#06c!important}.bar{background:#e5e5ea!important}.bar span{background:#06c!important}.pill.blue{background:#e8f2ff!important;color:#06c!important}.pill.green{background:#e6f7ee!important;color:#16824d!important}.pill.amber{background:#fff2d8!important;color:#9a6500!important}.pill.gray{background:#f0f0f2!important;color:#6e6e73!important}.notice{background:#fff8e5!important;color:#8a640e!important;border-color:#efd79b!important}.route-guide{background:#f7f7f9!important;border-color:#d2d2d7!important}.route-guide-title{color:#1d1d1f!important}.route-rule{color:#6e6e73!important}.route-rule i{background:#06c!important;box-shadow:0 0 0 4px #e8f2ff!important}
+  .filters input,.filters select,.field input,.field select,.field textarea{background:#fff!important;color:#1d1d1f!important;border-color:#d2d2d7!important}.filters input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#8a8a8f!important}.secondary{background:#fff!important;color:#1d1d1f!important;border-color:#d2d2d7!important}.secondary:hover{background:#1d1d1f!important;color:#fff!important;border-color:#1d1d1f!important}th{background:#f5f5f7!important;color:#6e6e73!important;border-color:#d2d2d7!important}td{color:#1d1d1f!important;border-color:#e5e5ea!important}tbody tr:hover td{background:#f5f7fb!important}.job{color:#06c!important}.modal{background:#fff!important;color:#1d1d1f!important;border-color:#d2d2d7!important}.modal .title{color:#1d1d1f!important}.modal .subtitle,.modal .field label{color:#6e6e73!important}.close{background:#f0f0f2!important;color:#6e6e73!important}
+  .screen.active,.screen.active .top,.screen.active .card{animation:none!important}
+  @media(max-width:620px){.main{padding:28px 15px 60px!important}.top{min-height:235px!important;border-radius:22px!important;padding:28px 22px!important}.title{font-size:43px!important}.kpis{grid-template-columns:1fr!important}.grid.two>.card{min-height:auto!important}.route,.team-card{min-height:104px!important}}
+</style>
+<style>
+  /* V5 structural pass: change the information architecture, not only the palette. */
+  #dashboard .grid.two{grid-template-columns:minmax(0,1.12fr) minmax(420px,.88fr)!important;gap:0!important;align-items:stretch!important}
+  #dashboard .grid.two>.card{border-radius:0!important;min-height:650px!important;box-shadow:none!important}
+  #dashboard .grid.two>.card:first-child{background:#101114!important;border-color:#101114!important;color:#fff!important;border-radius:28px 0 0 28px!important;padding:34px!important}
+  #dashboard .grid.two>.card:first-child .section-title{color:#fff!important;font-size:24px!important}.grid.two>.card:first-child .section-note{color:#9297a1!important}.grid.two>.card:first-child .pill.blue{background:#202735!important;color:#8bbcff!important}
+  #dashboard .grid.two>.card:nth-child(2){background:#fff!important;border-color:#d2d2d7!important;border-radius:0 28px 28px 0!important;padding:34px!important}
+  #dashboard .grid.two>.card:first-child .route{position:relative;background:transparent!important;border:0!important;border-bottom:1px solid #2e333b!important;border-radius:0!important;height:105px!important;min-height:105px!important;max-height:105px!important;margin:0!important;padding:18px 0 18px 20px!important;box-shadow:none!important}
+  #dashboard .grid.two>.card:first-child .route:before{display:block!important;content:"";position:absolute;left:0;top:26px;width:7px;height:7px;border-radius:50%;background:#4a92ff;box-shadow:0 0 0 5px #182b4a!important}.grid.two>.card:first-child .route:after{content:"";position:absolute;left:3px;top:34px;bottom:-28px;width:1px;background:#344458}.grid.two>.card:first-child .route:last-of-type:after{display:none}
+  #dashboard .grid.two>.card:first-child .route-date{color:#aeb7c4!important;width:72px}.grid.two>.card:first-child .route-main strong{color:#fff!important;font-size:16px!important}.grid.two>.card:first-child .route-main small{color:#9297a1!important}.grid.two>.card:first-child .route-action{color:#7eb4ff!important}
+  #dashboard .grid.two>.card:first-child .route-guide{margin-top:auto!important;background:#181c22!important;border:1px solid #303640!important;border-radius:16px!important}.grid.two>.card:first-child .route-guide-title{color:#fff!important}.grid.two>.card:first-child .route-rule{color:#a6adb8!important}
+  #dashboard .grid.two>.card:nth-child(2) .team-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:18px;align-items:center;background:#f7f7f9!important;border:0!important;border-left:3px solid #dce1e8!important;border-radius:14px!important;height:86px!important;min-height:86px!important;max-height:86px!important;margin:0 0 10px!important;padding:13px 16px!important;box-shadow:none!important}
+  #dashboard .grid.two>.card:nth-child(2) .team-card:nth-of-type(2){border-left-color:#65c991!important}#dashboard .grid.two>.card:nth-child(2) .team-card:nth-of-type(3){border-left-color:#efb34c!important}#dashboard .grid.two>.card:nth-child(2) .team-card:nth-of-type(4){border-left-color:#65c991!important}
+  #dashboard .grid.two>.card:nth-child(2) .team-row{grid-column:1/-1;grid-row:1;min-height:0}.grid.two>.card:nth-child(2) .team-row>div{display:flex;align-items:baseline;gap:7px}.grid.two>.card:nth-child(2) .team-name{font-size:17px!important}.grid.two>.card:nth-child(2) .team-row>.pill{font-size:10px!important}.grid.two>.card:nth-child(2) .bar{grid-column:1/-1;grid-row:2;margin-top:2px!important;height:5px!important}
+  #dashboard .grid.two>.card:nth-child(2) .notice{margin-top:auto!important;border-radius:14px!important}
+  #jobs>.card,#daily>.card,#routes>.card,#technician>.card{border-radius:22px!important;background:#fff!important;border:1px solid #d2d2d7!important;box-shadow:0 10px 30px rgba(0,0,0,.05)!important}
+  #jobs .table-wrap{border:1px solid #e1e1e6;border-radius:16px;overflow:auto}#jobs table{border:0!important;border-radius:0!important}#jobs th{position:sticky;top:0;z-index:2;background:#1d1d1f!important;color:#fff!important}#jobs td{padding:15px 12px!important}
+  #routes .route{background:#fbfbfd!important;border:0!important;border-left:4px solid #06c!important;border-radius:0 15px 15px 0!important;box-shadow:none!important;margin:12px 0!important;min-height:94px!important}#routes .route:nth-of-type(4){border-left-color:#72c89b!important}#routes .route:hover{transform:translateX(4px)!important}
+  #daily table{border:0!important}#daily th{background:#1d1d1f!important;color:#fff!important}#daily td{padding:16px 12px!important}#daily tbody tr:hover td{background:#f5f7fb!important}
+  #technician .mobile-frame{border-radius:28px!important;border:8px solid #1d1d1f!important;box-shadow:0 24px 65px rgba(0,0,0,.16)!important}
+  @media(max-width:900px){#dashboard .grid.two{grid-template-columns:1fr!important}#dashboard .grid.two>.card:first-child,#dashboard .grid.two>.card:nth-child(2){border-radius:24px!important}.grid.two>.card:first-child{margin-bottom:14px}}
+  @media(max-width:620px){#dashboard .grid.two>.card:first-child,#dashboard .grid.two>.card:nth-child(2){padding:24px!important}.grid.two>.card:first-child .route{height:100px!important;min-height:100px!important;max-height:100px!important}}
+</style>
+<script>
+  // Final QA fix: make every Jobs filter control functional and keep it synced with date range filtering.
+  (()=>{
+    const screen=document.getElementById('jobs'),filters=screen?.querySelector('.filters'),body=document.getElementById('jobRows');
+    if(!filters||!body)return;
+    const search=filters.querySelector('input:not([type="date"])'),selects=filters.querySelectorAll('select');
+    const normalize=v=>String(v||'').trim().toLowerCase();
+    function applyAll(){
+      const q=normalize(search?.value),status=normalize(selects[0]?.value),area=normalize(selects[1]?.value);
+      const from=document.getElementById('jobsDateFrom')?.value,to=document.getElementById('jobsDateTo')?.value;
+      const fromD=from?new Date(from+'T00:00:00'):null,toD=to?new Date(to+'T23:59:59'):null;
+      body.querySelectorAll('tr').forEach(row=>{const job=normalize(row.querySelector('.job')?.textContent),text=normalize(row.innerText),stored=(()=>{try{return JSON.parse(localStorage.getItem('job_'+job)||'null')}catch{return null}})(),statusText=normalize(stored?.status||''),areaText=normalize(stored?.area||stored?.district||row.querySelector('td:nth-child(9)')?.innerText),recordDate=stored?.date||row.querySelector('[data-field="appointment"]')?.innerText?.slice(0,10),d=recordDate?new Date(recordDate+'T12:00:00'):null;const matchText=!q||text.includes(q),matchStatus=!status||status==='ทุกสถานะ'||statusText.includes(status),matchArea=!area||area==='ทุกพื้นที่'||areaText.includes(area),matchDate=!d||!fromD||!toD|| (d>=fromD&&d<=toD);row.hidden=!(matchText&&matchStatus&&matchArea&&matchDate)});
+    }
+    search?.addEventListener('input',applyAll);selects.forEach(s=>s.addEventListener('change',applyAll));document.getElementById('jobsDateFrom')?.addEventListener('change',applyAll);document.getElementById('jobsDateTo')?.addEventListener('change',applyAll);
+    const add=screen.querySelector('.top .primary');if(add){add.removeAttribute('onclick');add.addEventListener('click',()=>window.openJobModal?.())}
+    window.jobFilterApply=applyAll;setTimeout(applyAll,60);new MutationObserver(()=>setTimeout(applyAll,40)).observe(body,{childList:true});
+  })();
+</script>
+<script>
+  // Final date QA: keep stored ISO values for logic, but render every visible date as dd/mm/yyyy.
+  (()=>{
+    const isoToDisplay=value=>{const m=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[3]}/${m[2]}/${m[1]}`:String(value||'')};
+    window.formatDisplayDate=isoToDisplay;
+    document.querySelectorAll('input[type="date"]').forEach(input=>{input.lang='en-GB';input.setAttribute('data-display-format','dd/mm/yyyy')});
+    const convert=node=>{if(node.nodeType!==Node.TEXT_NODE||!node.nodeValue)return;node.nodeValue=node.nodeValue.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,(_,y,m,d)=>`${d}/${m}/${y}`)};
+    const scan=root=>{const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(convert)};
+    scan(document.body);new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE)convert(n);else if(n.nodeType===Node.ELEMENT_NODE)scan(n)}))).observe(document.body,{childList:true,subtree:true});
+  })();
+</script>
+<script>
+  // Final QA correction: the Daily modal must use the same normalized team/date source as the queue rows.
+  (()=>{
+    const body=document.querySelector('#daily tbody'),date=document.getElementById('dailyDate'),modal=document.getElementById('dailyJobsModal');if(!body||!date||!modal)return;
+    const teamKey=v=>{const m=String(v||'').match(/(?:TEAM|HA\s*&?\s*AV|HA)\s*([1-4])/i);return m?'HA'+m[1]:''};
+    const allJobs=()=>Object.keys(localStorage).filter(k=>k.startsWith('job_')).map(k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}}).filter(Boolean);
+    const jobsFor=(team,day)=>{const transfers=JSON.parse(localStorage.getItem('jobTransfers')||'{}');return allJobs().filter(x=>{const job=String(x.job||'');const t=transfers[job];const assigned=teamKey(t?.team||x.engineer||x.team);return (t?.date||x.date)===day&&assigned===teamKey(team)})};
+    const open=(team)=>{const day=date.value,jobs=jobsFor(team,day);document.getElementById('dailyJobsTitle').textContent=`${teamKey(team)} · งานวันที่ ${window.formatDisplayDate?window.formatDisplayDate(day):day}`;document.getElementById('dailyJobsSubtitle').textContent=`พบ ${jobs.length} งานจากข้อมูลเดือนกันยายน 2026`;const rows=document.getElementById('dailyJobsRows');rows.innerHTML=jobs.length?jobs.map(x=>`<tr><td class="job">${x.job||'-'}</td><td>${x.product||'-'}<br><span class="muted">${x.model||'-'}</span></td><td>${x.area||x.district||'-'}${x.province&&x.province!==x.district?' · '+x.province:''}</td><td>${x.customer||x.customerName||'-'}</td><td>${x.statusUpdate||'-'}</td><td><button class="secondary transfer-job" type="button">โอนงาน</button></td></tr>`).join(''):`<tr><td colspan="6" class="empty">ไม่พบงานของทีมนี้ในวันที่เลือก</td></tr>`;modal.classList.add('open')};
+    const bind=()=>body.querySelectorAll('tr').forEach(row=>{if(row.dataset.qaDailyBound)return;row.dataset.qaDailyBound='1';const team=teamKey(row.querySelector('td b')?.textContent);if(!team)return;row.addEventListener('click',e=>{if(e.target.closest('button'))return;open(team)});row.querySelector('.view-daily')?.addEventListener('click',e=>{e.stopPropagation();open(team)})});
+    bind();new MutationObserver(bind).observe(body,{childList:true,subtree:true});date.addEventListener('change',()=>setTimeout(bind,80));
+  })();
+</script>
+<script>
+  if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+<style>
+  /* Final motion QA override (must remain last). */
+  .screen.active .top{animation:qaHeroFinal .55s cubic-bezier(.22,.61,.36,1) both!important}.screen.active .card{animation:qaSurfaceFinal .48s cubic-bezier(.22,.61,.36,1) both!important}.screen.active .card:nth-child(2){animation-delay:.05s!important}.screen.active .card:nth-child(3){animation-delay:.1s!important}
+  @keyframes qaHeroFinal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes qaSurfaceFinal{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){.screen.active .top,.screen.active .card{animation:none!important}}
+</style>
+</html>
